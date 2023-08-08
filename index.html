@@ -408,7 +408,7 @@
         const friendlySeconds = seconds < 10 ? '0' + seconds : seconds;
         const milliseconds = effectMessage.timestamp.getMilliseconds();
         const friendlyMilliSeconds = milliseconds < 100 ? '0' + ( milliseconds < 10 ? '0' + milliseconds : milliseconds) : milliseconds;
-        friendlyTimestampElement.innerHTML = `${friendlyHours}:${friendlyMinutes}:${friendlySeconds}:${friendlyMilliSeconds}`
+        friendlyTimestampElement.innerHTML = `${friendlyHours}:${friendlyMinutes}:${friendlySeconds}.${friendlyMilliSeconds}`
         friendlyViewElement.appendChild(friendlyTimestampElement);
 
         // Actor  applying the effect to the target
