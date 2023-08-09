@@ -107,10 +107,10 @@
       //    ex: "21|2023-01-16T13:37:49.1410000-05:00|107CDF82|Tonk Tonkers|16|Bulwark|107CDF82|Tonk Tonkers|640F|4D8000|0|0|0|0|0|0|0|0|0|0|0|0|0|0|98900|98900|10000|10000|||-87.90|51.12|1.50|-1.54|98900|98900|10000|10000|||-87.90|51.12|1.50|-1.54|0000130D|0|1|81681bf499192d9b"
       //        messageType: 21
       //        timestamp: 2023-08-08T17:49:10.1180000-04:00
-      //        actor?Id: 10911F96
-      //        actor?Name: Tonk Tonkers
-      //        ???: DE0
-      //        Skill Name: Bulwark
+      //        actorId: 10911F96
+      //        actorName: Tonk Tonkers
+      //        action id: DE0
+      //        action: Equilibrium
       //        targetId: 10911F96
       //        targetName: Tonk Tonkers
       //        ???: 4
@@ -268,109 +268,37 @@
         const detailsTable = document.createElement('table');
         detailsTable.classList.add('gainedEffectDetailsTable');
 
-        // First Row //////////////////////////////////////////////////////
-        const firstRow = document.createElement('tr');
+        const firstRow = createTableRowFromArray([
+          'Actor',
+          effectMessage.actorName,
+          'Action',
+          effectMessage.actionName
+        ]);
         detailsTable.appendChild(firstRow);
 
-        // Actor Name label
-        const actorLabelColumnElement = document.createElement('td');
-        firstRow.appendChild(actorLabelColumnElement);
-        const actorLabelElement = document.createTextNode('Actor');
-        actorLabelColumnElement.appendChild(actorLabelElement);
-        // Actor Name
-        const actorNameColumnElement = document.createElement('td');
-        firstRow.appendChild(actorNameColumnElement);
-        const actorNameElement = document.createTextNode(effectMessage.actorName);
-        actorNameColumnElement.appendChild(actorNameElement);
-
-        // Action Name label
-        const actionNameLabelColumnElement = document.createElement('td');
-        firstRow.appendChild(actionNameLabelColumnElement);
-        const actionNameLabelElement = document.createTextNode('Action');
-        actionNameLabelColumnElement.appendChild(actionNameLabelElement);
-        // Action Name
-        const actionNameColumnElement = document.createElement('td');
-        firstRow.appendChild(actionNameColumnElement);
-        const actionNameElement = document.createTextNode(effectMessage.actionName);
-        actionNameColumnElement.appendChild(actionNameElement);
-
-        // Second Row ////////////////////////////////////////////////////////
-        const secondRow = document.createElement('tr');
+        const secondRow = createTableRowFromArray([
+          'Actor ID',
+          effectMessage.actorId,
+          'Action ID',
+          effectMessage.actionId
+        ]);
         detailsTable.appendChild(secondRow);
 
-        // Actor ID label
-        const actorIdLabelColumnElement = document.createElement('td');
-        secondRow.appendChild(actorIdLabelColumnElement);
-        const actorIdLabelElement = document.createTextNode('Actor ID');
-        actorIdLabelColumnElement.appendChild(actorIdLabelElement);
-        // Actor ID
-        const actorIdColumnElement = document.createElement('td');
-        secondRow.appendChild(actorIdColumnElement);
-        const actorIdElement = document.createTextNode(effectMessage.actorId);
-        actorIdColumnElement.appendChild(actorIdElement);
-
-        // Action ID label
-        const actionIdLabelColumnElement = document.createElement('td');
-        secondRow.appendChild(actionIdLabelColumnElement);
-        const actionIdLabelElement = document.createTextNode('Action ID');
-        actionIdLabelColumnElement.appendChild(actionIdLabelElement);
-        // Action ID
-        const actionIdColumnElement = document.createElement('td');
-        secondRow.appendChild(actionIdColumnElement);
-        const actionIdElement = document.createTextNode(effectMessage.actionId);
-        actionIdColumnElement.appendChild(actionIdElement);
-
-        // Third Row ///////////////////////////////////////////////////////
-        const thirdRow = document.createElement('tr');
+        const thirdRow = createTableRowFromArray([
+          'Target',
+          effectMessage.targetName,
+          'Duration',
+          effectMessage.duration
+        ]);
         detailsTable.appendChild(thirdRow);
 
-        // Target Name label
-        const targetNameLabelColumnElement = document.createElement('td');
-        thirdRow.appendChild(targetNameLabelColumnElement);
-        const targetNameLabelElement = document.createTextNode('Target');
-        targetNameLabelColumnElement.appendChild(targetNameLabelElement);
-        // Target Name
-        const targetNameColumnElement = document.createElement('td');
-        thirdRow.appendChild(targetNameColumnElement);
-        const targetNameElement = document.createTextNode(effectMessage.targetName);
-        targetNameColumnElement.appendChild(targetNameElement);
-
-        // Duration label
-        const durationLabelColumnElement = document.createElement('td');
-        thirdRow.appendChild(durationLabelColumnElement);
-        const durationLabelElement = document.createTextNode('Duration');
-        durationLabelColumnElement.appendChild(durationLabelElement);
-        // Duration
-        const DurationColumnElement = document.createElement('td');
-        thirdRow.appendChild(DurationColumnElement);
-        const durationElement = document.createTextNode(effectMessage.duration);
-        DurationColumnElement.appendChild(durationElement);
-
-        // Fourth Row ///////////////////////////////////////////////////////////
-        const fourthRow = document.createElement('tr');
+        const fourthRow = createTableRowFromArray([
+          'Target ID',
+          effectMessage.targetId,
+          'Message Type',
+          effectMessage.messageType
+        ]);
         detailsTable.appendChild(fourthRow);
-
-        // Target ID label
-        const targetIdLabelColumnElement = document.createElement('td');
-        fourthRow.appendChild(targetIdLabelColumnElement);
-        const targetIdLabelElement = document.createTextNode('Target ID');
-        targetIdLabelColumnElement.appendChild(targetIdLabelElement);
-        // Target ID
-        const targetIdColumnElement = document.createElement('td');
-        fourthRow.appendChild(targetIdColumnElement);
-        const targetIdElement = document.createTextNode(effectMessage.targetId);
-        targetIdColumnElement.appendChild(targetIdElement);
-
-        // Message Type label
-        const messageTypeLabelColumnElement = document.createElement('td');
-        fourthRow.appendChild(messageTypeLabelColumnElement);
-        const messageTypeLabelElement = document.createTextNode('Message Type');
-        messageTypeLabelColumnElement.appendChild(messageTypeLabelElement);
-        // Message Type
-        const messageTypeColumnElement = document.createElement('td');
-        fourthRow.appendChild(messageTypeColumnElement);
-        const messageTypeElement = document.createTextNode(effectMessage.messageType);
-        messageTypeColumnElement.appendChild(messageTypeElement);
 
         // Fifth Row ///////////////////////////////////////////////////////////
         const fifthRow = document.createElement('tr');
@@ -385,6 +313,17 @@
 
 
         return detailsTable;
+      }
+
+      function createTableRowFromArray(elements){
+        const newRow = document.createElement('tr');
+        elements.forEach(element => {
+          const newColumn = document.createElement('td');
+          newRow.appendChild(newColumn);
+          const content = document.createTextNode(element);
+          newColumn.appendChild(content);
+        });
+        return newRow;
       }
 
       function createGainedEffectElement(rawData){
