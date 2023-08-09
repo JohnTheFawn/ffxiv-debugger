@@ -361,6 +361,13 @@
         return newRow;
       }
 
+      /**
+       * Given content, create a code block and put the content inside of it
+       *
+       * @param {string} content The content to put inside of the code block
+       *
+       * @return {HTMLObject} The new code block element
+       */
       function createCodeBlock(content){
         const codeTagContainer = document.createElement('div');
         codeTagContainer.classList.add('gainedEffectCodeContainer');
