@@ -179,7 +179,7 @@
       //        actor?Name: Tonk Tonkers
       //        target?Id: 107CDF82
       //        target?Name: Tonk Tonkers
-      
+
       const MESSAGE_TYPE_USE_ABILITY = '21'; // Character uses ability
       const MESSAGE_TYPE_GAIN_EFFECT = '26'; // Character gains effect
       const MESSAGE_TYPE_LOSE_EFFECT = '30'; // Character loses effect
@@ -272,6 +272,26 @@
        */
       function appendElementToMain(element){
         document.getElementById('main').appendChild(element);
+      }
+
+      /**
+       * Given a Date object, creates a user friendly string to display that
+       * includes Hours, Minutes, Seconds, and Milliseconds
+       *
+       * @param {date} timestamp The Date to convert
+       *
+       * @return {string} The user friendly string HH:mm:ss.SSS
+       */
+      function convertDateToFriendlyWithMilliseconds(timestamp){
+        const hours = timestamp.getHours();
+        const friendlyHours = hours < 10 ? '0' + hours : hours;
+        const minutes = timestamp.getMinutes();
+        const friendlyMinutes = minutes < 10 ? '0' + minutes : minutes;
+        const seconds = timestamp.getSeconds();
+        const friendlySeconds = seconds < 10 ? '0' + seconds : seconds;
+        const milliseconds = timestamp.getMilliseconds();
+        const friendlyMilliSeconds = milliseconds < 100 ? '0' + ( milliseconds < 10 ? '0' + milliseconds : milliseconds) : milliseconds;
+        return `${friendlyHours}:${friendlyMinutes}:${friendlySeconds}.${friendlyMilliSeconds}`;
       }
 
       /**
@@ -378,16 +398,7 @@
         // Timestamp
         const friendlyTimestampElement = document.createElement('span');
         const timestamp = new Date(effectMessage.timestamp);
-        // Create a friendly, consistently spaced, view of the timestamp
-        const hours = effectMessage.timestamp.getHours();
-        const friendlyHours = hours < 10 ? '0' + hours : hours;
-        const minutes = effectMessage.timestamp.getMinutes();
-        const friendlyMinutes = minutes < 10 ? '0' + minutes : minutes;
-        const seconds = effectMessage.timestamp.getSeconds();
-        const friendlySeconds = seconds < 10 ? '0' + seconds : seconds;
-        const milliseconds = effectMessage.timestamp.getMilliseconds();
-        const friendlyMilliSeconds = milliseconds < 100 ? '0' + ( milliseconds < 10 ? '0' + milliseconds : milliseconds) : milliseconds;
-        friendlyTimestampElement.innerHTML = `${friendlyHours}:${friendlyMinutes}:${friendlySeconds}.${friendlyMilliSeconds}`
+        friendlyTimestampElement.innerHTML = convertDateToFriendlyWithMilliseconds(timestamp);
         friendlyViewElement.appendChild(friendlyTimestampElement);
 
         // Actor  applying the effect to the target
