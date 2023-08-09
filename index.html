@@ -125,6 +125,14 @@
       //        actor?Name: Tonk Tonkers
       //        targetId: 107CDF82
       //        targetName: Tonk Tonkers
+
+      /**
+       * Parse a "Gained an Effect" log line
+       *
+       * @param {object} message The raw "Gained an Effect" message object
+       *
+       * @return {object} A parsed and labeled object containing the data.
+       */
       function parseMessageGainEffect(message){
         return {
           messageType: message.line[0],
@@ -138,6 +146,12 @@
           targetName: message.line[8]
         };
       }
+
+      /**
+       * Create a fake Gained Effect message. Useful for testing.
+       *
+       * @return {object} A fake gained effect message object
+       */
       function createFakeMessageGainEffectMessage(){
         return {
           line: [
@@ -153,6 +167,7 @@
           ]
         }
       }
+
       // TODO function to parse this message type
       //    ex: "30|2023-01-16T13:37:53.8630000-05:00|4D|Bulwark|0.00|107CDF82|Tonk Tonkers|107CDF82|Tonk Tonkers|00|98900|98900|ebfc01ff60fa6c8f"
       //        messageType: 30
@@ -164,13 +179,7 @@
       //        actor?Name: Tonk Tonkers
       //        target?Id: 107CDF82
       //        target?Name: Tonk Tonkers
-
-      // We only want a few of the message types
-      // Character uses ability: Display something in the overlay to so it feels
-      //                         responsive?
-      // Character gains effect: Communicate that the character has the effect
-      // Character loses effect: Communicate that the character no longer has
-      //                         the effect
+      
       const MESSAGE_TYPE_USE_ABILITY = '21'; // Character uses ability
       const MESSAGE_TYPE_GAIN_EFFECT = '26'; // Character gains effect
       const MESSAGE_TYPE_LOSE_EFFECT = '30'; // Character loses effect
@@ -256,14 +265,45 @@
         mainElement.appendChild(newElement);
       }
 
+      /**
+       * Append an element to the main element
+       *
+       * @param {HTMLElement} element The element to append
+       */
       function appendElementToMain(element){
         document.getElementById('main').appendChild(element);
+      }
+
+      /**
+       * Given an array of strings, this will return a table row with each
+       * element in it's own column in the row.
+       *
+       * @param {array} elements An array of strings to put into table columns
+       *
+       * @return {HTMLElement} The newly created table row element
+       */
+      function createTableRowFromArray(elements){
+        const newRow = document.createElement('tr');
+        elements.forEach(element => {
+          const newColumn = document.createElement('td');
+          newRow.appendChild(newColumn);
+          const content = document.createTextNode(element);
+          newColumn.appendChild(content);
+        });
+        return newRow;
       }
 
       function createUsedAbilityElement(abilityMessage){
 
       }
 
+      /**
+       * Given a gainedEffectMessage, create an HTML table with it's data
+       *
+       * @param {object} effectMessage The parsed gained effect message.
+       *
+       * @return {HTMLObject} The newly created table element
+       */
       function createGainedEffectTable(effectMessage){
         const detailsTable = document.createElement('table');
         detailsTable.classList.add('gainedEffectDetailsTable');
@@ -315,17 +355,14 @@
         return detailsTable;
       }
 
-      function createTableRowFromArray(elements){
-        const newRow = document.createElement('tr');
-        elements.forEach(element => {
-          const newColumn = document.createElement('td');
-          newRow.appendChild(newColumn);
-          const content = document.createTextNode(element);
-          newColumn.appendChild(content);
-        });
-        return newRow;
-      }
-
+      /**
+       * Create a "Gained Effect" element to display the "Gained an Effect" log
+       * lines
+       *
+       * @param {object} rawData The raw, unparsed, gained effect object
+       *
+       * @return {HTMLObject} The newly created table
+       */
       function createGainedEffectElement(rawData){
         const effectMessage = parseMessageGainEffect(rawData);
         // Container for the Gained Effect messages
@@ -372,7 +409,7 @@
         const gainedEffectTable = createGainedEffectTable(effectMessage)
         detailedView.appendChild(gainedEffectTable);
 
-        // Parsed message view ////////////////////////////////////////////////////
+        // Parsed message view
         const codeTagContainer = document.createElement('div');
         codeTagContainer.classList.add('gainedEffectCodeContainer');
         gainedEffectElement.appendChild(codeTagContainer);
@@ -381,7 +418,7 @@
         codeTag.innerHTML = JSON.stringify(effectMessage);
         codeTagContainer.appendChild(codeTag);
 
-        // Raw message view ////////////////////////////////////////////////////
+        // Raw message view
         const rawCodeTagContainer = document.createElement('div');
         rawCodeTagContainer.classList.add('gainedEffectCodeContainer');
         gainedEffectElement.appendChild(rawCodeTagContainer);
