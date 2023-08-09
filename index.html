@@ -24,7 +24,7 @@
         box-shadow: 2px 2px 3px 0px rgba(0,0,0,0.2);
       }
 
-      .gainedEffectFriendlyView{
+      .itemFriendlyView{
         cursor: pointer;
         margin: -8px;
         padding: 8px;
@@ -32,34 +32,34 @@
         border-radius: 8px;
       }
 
-      .gainedEffectContainer[open] > .gainedEffectFriendlyView{
+      .itemContainer[open] > .itemFriendlyView{
         margin-bottom: 8px;
         border-bottom: 1px solid #c2c2c2;
       }
 
-      .gainedEffectFriendlyView:hover{
+      .itemFriendlyView:hover{
         background-color: rgba(0, 0, 0, 0.1);
       }
 
-      .gainedEffectDetailsTable{
+      .itemDetailsTable{
         width: 100%;
       }
 
-      .gainedEffectDetailsTable, .gainedEffectDetailsTable tr {
+      .itemDetailsTable, .itemDetailsTable tr {
         border: 1px solid #c2c2c2;
         border-collapse: collapse;
       }
 
-      .gainedEffectDetailsTable td:nth-child(3){
+      .itemDetailsTable td:nth-child(3){
         border-left: 1px solid #c2c2c2;
       }
 
-      .gainedEffectDetailsTable td {
+      .itemDetailsTable td {
         padding-right: 8px;
         padding-left: 8px;
       }
 
-      .gainedEffectCodeContainer{
+      .itemCodeContainer{
         border: 1px solid #c2c2c2;
         border-radius: 8px;
         padding: 8px;
@@ -370,7 +370,7 @@
        */
       function createCodeBlock(content){
         const codeTagContainer = document.createElement('div');
-        codeTagContainer.classList.add('gainedEffectCodeContainer');
+        codeTagContainer.classList.add('itemCodeContainer');
         const codeTag = document.createElement('code');
         codeTag.classList.add('wordWrapAnywhere');
         codeTag.innerHTML = JSON.stringify(content);
@@ -387,7 +387,7 @@
        */
       function createUsedAbilityTable(usedAbilityMessage){
         const detailsTable = document.createElement('table');
-        detailsTable.classList.add('gainedEffectDetailsTable');
+        detailsTable.classList.add('itemDetailsTable');
 
         const firstRow = createTableRowFromArray([
           'Actor',
@@ -440,11 +440,11 @@
         // Container for the used messages
         const usedAbilityElement = document.createElement('details');
         usedAbilityElement.classList.add('card');
-        usedAbilityElement.classList.add('usedAbilityContainer');
+        usedAbilityElement.classList.add('itemContainer');
 
         // Container for the friendly view elements
         const friendlyViewElement = document.createElement('summary');
-        friendlyViewElement.classList.add('usedAbilityFriendlyView');
+        friendlyViewElement.classList.add('itemFriendlyView');
         usedAbilityElement.appendChild(friendlyViewElement);
 
         // Timestamp
@@ -494,7 +494,7 @@
        */
       function createGainedEffectTable(effectMessage){
         const detailsTable = document.createElement('table');
-        detailsTable.classList.add('gainedEffectDetailsTable');
+        detailsTable.classList.add('itemDetailsTable');
 
         const firstRow = createTableRowFromArray([
           'Actor',
@@ -555,11 +555,11 @@
         // Container for the Gained Effect messages
         const gainedEffectElement = document.createElement('details');
         gainedEffectElement.classList.add('card');
-        gainedEffectElement.classList.add('gainedEffectContainer');
+        gainedEffectElement.classList.add('itemContainer');
 
         // Container for the friendly view elements
         const friendlyViewElement = document.createElement('summary');
-        friendlyViewElement.classList.add('gainedEffectFriendlyView');
+        friendlyViewElement.classList.add('itemFriendlyView');
         gainedEffectElement.appendChild(friendlyViewElement);
 
         // Timestamp
