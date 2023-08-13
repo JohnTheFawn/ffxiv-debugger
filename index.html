@@ -311,10 +311,17 @@
        * logToConsole is set and whether or not the data is relevant.
        */
       function logMessage(data, actorId, targetId){
-        if(options.logToConsole){
-          if(isRelatedToCurrentCharacter(actorId) || isRelatedToCurrentCharacter(targetId)){
-            console.log(data);
-          }
+        let canLog = options.logToConsole;
+
+        if(actorId){
+          canLog = canLog && isRelatedToCurrentCharacter(actorId);
+        }
+        if(targetId){
+          canLog = canLog && isRelatedToCurrentCharacter(targetId)
+        }
+
+        if(canLog){
+          console.log(data);
         }
       }
 
