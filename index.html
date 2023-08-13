@@ -73,6 +73,10 @@
         background: rgba(0, 0, 0, .03);
       }
 
+      .displayNone{
+        display: none;
+      }
+
       .preventSelect{
         -webkit-user-select: none; /* Safari */
         -ms-user-select: none; /* IE 10 and IE 11 */
@@ -86,7 +90,9 @@
   </head>
   <body>
     <div id="toolbar">
-      <input type="checkbox" id="logToConsoleCheckbox" name="logToConsole" checked onchange="updateLogToConsole(this)"=>
+      <button id="pauseButton"  name="pause" onclick="updatePaused(this)" data-pause="true">Pause</button>
+      <button id="resumeButton" name="pause" onclick="updatePaused(this)" class="displayNone">Resume</button>
+      <input type="checkbox" id="logToConsoleCheckbox" name="logToConsole" checked onchange="updateLogToConsole(this)"/>
       <label for="logToConsoleCheckbox">Log to Console</label>
     </div>
     <div id="main">
@@ -94,6 +100,27 @@
   </body>
   <footer>
     <script>
+
+      // Parse messages and add elements?
+      let paused = false;
+      /**
+       * onclick handler for when the user clicks the Pause/Resume buttons
+       *
+       * @param {HTMLElement} e The pause or resume button
+       */
+      function updatePaused(e){
+        document.getElementById('pauseButton').classList.toggle('displayNone');
+        document.getElementById('resumeButton').classList.toggle('displayNone');
+        if(e.dataset.pause){
+          paused = true;
+          pauseButton.classList.add('hidden');
+        }
+        else{
+          paused = false;
+        }
+      }
+
+      // Log to the console?
       let logToConsole = true;
       /**
        * onchange handler for when the user updates the "Log to Console"
@@ -274,53 +301,55 @@
       addOverlayListener(eventType, (data) => {
         const messageType = data.line[0];
         if(messageTypes.includes(messageType)){
-          if(logToConsole){
-            console.log(messageTypeToFriendlyMap[messageType] ? messageTypeToFriendlyMap[messageType] : 'Unknown message type');
-            console.log(data);
-          }
-          switch(messageType){
-            case MESSAGE_TYPE_USE_ABILITY:
-              const usedAbilityMessage = parseMessageUsedAbility(data);
-              if(logToConsole){
-                console.log(usedAbilityMessage);
-              }
-              abilities.push(usedAbilityMessage);
+          if(!paused){
+            if(logToConsole){
+              console.log(messageTypeToFriendlyMap[messageType] ? messageTypeToFriendlyMap[messageType] : 'Unknown message type');
+              console.log(data);
+            }
+            switch(messageType){
+              case MESSAGE_TYPE_USE_ABILITY:
+                const usedAbilityMessage = parseMessageUsedAbility(data);
+                if(logToConsole){
+                  console.log(usedAbilityMessage);
+                }
+                abilities.push(usedAbilityMessage);
 
-              appendElementToMain(
-                createUsedAbilityElement(
-                  data
-                )
-              );
+                appendElementToMain(
+                  createUsedAbilityElement(
+                    data
+                  )
+                );
 
-              break;
-            case MESSAGE_TYPE_GAIN_EFFECT:
-              const gainedEffectMessage = parseMessageGainEffect(data);
-              if(logToConsole){
-                console.log(gainedEffectMessage);
-              }
-              effects.push(gainedEffectMessage);
+                break;
+              case MESSAGE_TYPE_GAIN_EFFECT:
+                const gainedEffectMessage = parseMessageGainEffect(data);
+                if(logToConsole){
+                  console.log(gainedEffectMessage);
+                }
+                effects.push(gainedEffectMessage);
 
-              appendElementToMain(
-                createGainedEffectElement(
-                  data
-                )
-              );
+                appendElementToMain(
+                  createGainedEffectElement(
+                    data
+                  )
+                );
 
-              break;
-            case MESSAGE_TYPE_LOSE_EFFECT:
-              const lostEffectMessage = parseMessageLostEffect(data);
-              if(logToConsole){
-                console.log(lostEffectMessage);
-              }
-              effects.push(lostEffectMessage);
+                break;
+              case MESSAGE_TYPE_LOSE_EFFECT:
+                const lostEffectMessage = parseMessageLostEffect(data);
+                if(logToConsole){
+                  console.log(lostEffectMessage);
+                }
+                effects.push(lostEffectMessage);
 
-              appendElementToMain(
-                createLostEffectElement(
-                  data
-                )
-              );
+                appendElementToMain(
+                  createLostEffectElement(
+                    data
+                  )
+                );
 
-              break;
+                break;
+            }
           }
         }
       });
