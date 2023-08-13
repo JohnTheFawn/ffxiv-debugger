@@ -250,17 +250,20 @@
       };
 
       const abilities = [];
+      const actors = [];
+      const targets = [];
+      const actions = [];
       const effects = [];
 
       addOverlayListener(eventType, (data) => {
         const messageType = data.line[0];
         if(messageTypes.includes(messageType)){
+          if(debug){
+            console.log(messageTypeToFriendlyMap[messageType] ? messageTypeToFriendlyMap[messageType] : 'Unknown message type');
+            console.log(data);
+          }
           switch(messageType){
             case MESSAGE_TYPE_USE_ABILITY:
-              if(debug){
-                console.log('Used an ability');
-                console.log(data);
-              }
               const usedAbilityMessage = parseMessageUsedAbility(data);
               if(debug){
                 console.log(usedAbilityMessage);
@@ -275,10 +278,6 @@
 
               break;
             case MESSAGE_TYPE_GAIN_EFFECT:
-              if(debug){
-                console.log('Gained an effect');
-                console.log(data);
-              }
               const gainedEffectMessage = parseMessageGainEffect(data);
               if(debug){
                 console.log(gainedEffectMessage);
@@ -293,10 +292,6 @@
 
               break;
             case MESSAGE_TYPE_LOSE_EFFECT:
-              if(debug){
-                console.log('Lost an effect');
-                console.log(data);
-              }
               const lostEffectMessage = parseMessageLostEffect(data);
               if(debug){
                 console.log(lostEffectMessage);
