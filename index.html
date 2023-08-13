@@ -10,9 +10,6 @@
         background-color: #d2d2d2;
       }
 
-      #main{
-      }
-
       #toolbar{
         background-color: white;
         border-bottom: 1px solid #c2c2c2;
@@ -103,16 +100,16 @@
         <button id="resumeButton" name="pause" onclick="updatePaused(this)" class="displayNone">Resume</button>
       </div>
       <div class="toolbarItem">
-        <input type="checkbox" id="logToConsoleCheckbox" name="logToConsole" checked onchange="updateLogToConsole(this)"/>
+        <input type="checkbox" id="logToConsoleCheckbox" name="logToConsole" checked onchange="updateOption('logToConsole', this.checked)"/>
         <label for="logToConsoleCheckbox">Log to Console</label>
       </div>
       <div class="toolbarItem">
-        <input type="checkbox" id="logRawDataCheckbox" name="logRawData" checked onchange="updateLogRawData(this)"/>
+        <input type="checkbox" id="logRawDataCheckbox" name="logRawData" checked onchange="updateOption('logRawData', this.checked)"/>
         <label for="logRawDataCheckbox">Log Raw Data</label>
       </div>
       <div class="toolbarItem">
-        <input type="checkbox" id="limitToCharacterCheckbox" name="limitToCharacter" onchange="updateLimitToCharacter(this)"/>
-        <label for="limitToCharacter" id="limitToCharacterLabel">Limit to {characterName}</label>
+        <input type="checkbox" id="limitToCharacterCheckbox" name="limitToCharacter" onchange="updateOption('limitToCharacter', this.checked)"/>
+        <label for="limitToCharacterCheckbox" id="limitToCharacterLabel">Limit to {characterName}</label>
       </div>
     </div>
     <div id="main">
@@ -121,8 +118,16 @@
   <footer>
     <script>
 
-      // Parse messages and add elements?
-      let paused = false;
+      const options = {
+        paused: false, // Pause all processing?
+        limitToCharacter: document.getElementById('limitToCharacterCheckbox').checked, // Limit to currenct character?
+        logToConsole: document.getElementById('logToConsoleCheckbox').checked, // Log to console?
+        logRawData: document.getElementById('logRawDataCheckbox').checked // Log raw data?
+      }
+
+      function updateOption(optionName, value){
+        options[optionName] = value;
+      }
       /**
        * onclick handler for when the user clicks the Pause/Resume buttons
        *
@@ -131,49 +136,7 @@
       function updatePaused(e){
         document.getElementById('pauseButton').classList.toggle('displayNone');
         document.getElementById('resumeButton').classList.toggle('displayNone');
-        if(e.dataset.pause){
-          paused = true;
-          pauseButton.classList.add('hidden');
-        }
-        else{
-          paused = false;
-        }
-      }
-
-      // Log to the console?
-      let logToConsole = document.getElementById('logToConsoleCheckbox').checked;
-      /**
-       * onchange handler for when the user updates the "Log to Console"
-       *          checkbox
-       *
-       * @param {HTMLElement} e The logToConsoleCheckbox element
-       */
-      function updateLogToConsole(e){
-        logToConsole = e.checked;
-      }
-
-      // Log raw data?
-      let logRawData = document.getElementById('logRawDataCheckbox').checked;
-      /**
-       * onchange handler for when the user updates the "Log to Console"
-       *          checkbox
-       *
-       * @param {HTMLElement} e The logRawDataCheckbox element
-       */
-      function updateLogRawData(e){
-        logRawData = e.checked;
-      }
-
-      // Limit logs to current character?
-      let limitToCharacter = document.getElementById('limitToCharacterCheckbox').checked;
-      /**
-       * onchange handler for when the user updates the "Limit to {characterName}"
-       *          checkbox
-       *
-       * @param {HTMLElement} e The limitToCharacterCheckbox element
-       */
-      function updateLimitToCharacter(e){
-        limitToCharacter = e.checked;
+        updateOption(e.dataset.pause ? true : false);
       }
 
       // Will be set to the name of the current character
@@ -348,7 +311,7 @@
        * logToConsole is set and whether or not the data is relevant.
        */
       function logMessage(data, actorId, targetId){
-        if(logToConsole){
+        if(options.logToConsole){
           if(isRelatedToCurrentCharacter(actorId) || isRelatedToCurrentCharacter(targetId)){
             console.log(data);
           }
@@ -365,7 +328,7 @@
        *                   limitToCharacter
        */
       function isRelatedToCurrentCharacter(id){
-        if(limitToCharacter){
+        if(options.limitToCharacter){
           if(id !== characterId){
             return false;
           }
@@ -376,8 +339,8 @@
       addOverlayListener(eventType, (data) => {
         const messageType = data.line[0];
         if(messageTypes.includes(messageType)){
-          if(!paused){
-            if(logToConsole && logRawData){
+          if(!options.paused){
+            if(options.logToConsole && options.logRawData){
               console.log(messageTypeToFriendlyMap[messageType] ? messageTypeToFriendlyMap[messageType] : 'Unknown message type');
               console.log(data);
             }
