@@ -13,8 +13,18 @@
       #toolbar{
         background-color: white;
         border-bottom: 1px solid #c2c2c2;
-        padding: 8px;
         display: flex;
+        position: absolute;
+        top: 0px;
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+      }
+
+      #main{
+        height: calc(100vh - 42px);
+        margin-top: 42px;
+        overflow-y: scroll;
       }
 
       .card{
