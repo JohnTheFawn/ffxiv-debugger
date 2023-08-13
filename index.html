@@ -374,8 +374,10 @@
         if(messageTypes.includes(messageType)){
           if(!options.paused){
             if(options.logToConsole && options.logRawData){
-              console.log(messageTypeToFriendlyMap[messageType] ? messageTypeToFriendlyMap[messageType] : 'Unknown message type');
-              console.log(data);
+              console.log(
+                messageTypeToFriendlyMap[messageType] ? messageTypeToFriendlyMap[messageType] : 'Unknown message type',
+                data
+              );
             }
             switch(messageType){
               case MESSAGE_TYPE_USE_ABILITY:
