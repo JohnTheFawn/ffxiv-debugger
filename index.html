@@ -59,7 +59,7 @@
         padding-left: 8px;
       }
 
-      .itemCodeContainer{
+      .codeContainer{
         border: 1px solid #c2c2c2;
         border-radius: 8px;
         padding: 8px;
@@ -370,7 +370,7 @@
        */
       function createCodeBlock(content){
         const codeTagContainer = document.createElement('div');
-        codeTagContainer.classList.add('itemCodeContainer');
+        codeTagContainer.classList.add('codeContainer');
         const codeTag = document.createElement('code');
         codeTag.classList.add('wordWrapAnywhere');
         codeTag.innerHTML = JSON.stringify(content);
@@ -435,6 +435,14 @@
         return detailsTable;
       }
 
+      /**
+       * Create a "Used an Ability" element to display the "Used an Ability" log
+       * lines
+       *
+       * @param {object} rawData The raw, unparsed, gained effect object
+       *
+       * @return {HTMLObject} The newly created element
+       */
       function createUsedAbilityElement(rawData){
         const usedAbilityMessage = parseMessageUsedAbility(rawData);
         // Container for the used messages
@@ -455,13 +463,12 @@
 
         // Actor using an Ability on a Target
         const friendlyActorElement = document.createElement('span');
-        const friendlyAmountText = !isNaN(usedAbilityMessage.amount) ? ' for <b>' + usedAbilityMessage.amount + '</b>': '';
+        let friendlyAmountText = usedAbilityMessage.targetName ? ` on <b>${usedAbilityMessage.targetName}</b>` : '';
+        friendlyAmountText += !isNaN(usedAbilityMessage.amount) ? ' for <b>' + usedAbilityMessage.amount + '</b>': '';
         friendlyActorElement.innerHTML = `
           <b>${usedAbilityMessage.actorName}</b>
           used
           <b>${usedAbilityMessage.actionName}</b>
-          on
-          <b>${usedAbilityMessage.targetName}</b>
           ${friendlyAmountText}
         `;
         friendlyViewElement.appendChild(friendlyActorElement);
@@ -548,7 +555,7 @@
        *
        * @param {object} rawData The raw, unparsed, gained effect object
        *
-       * @return {HTMLObject} The newly created table
+       * @return {HTMLObject} The newly created element
        */
       function createGainedEffectElement(rawData){
         const effectMessage = parseMessageGainEffect(rawData);
