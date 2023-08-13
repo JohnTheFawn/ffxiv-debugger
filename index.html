@@ -107,6 +107,10 @@
         <label for="logToConsoleCheckbox">Log to Console</label>
       </div>
       <div class="toolbarItem">
+        <input type="checkbox" id="logRawDataCheckbox" name="logRawData" checked onchange="updateLogRawData(this)"/>
+        <label for="logRawDataCheckbox">Log Raw Data</label>
+      </div>
+      <div class="toolbarItem">
         <input type="checkbox" id="limitToCharacterCheckbox" name="limitToCharacter" onchange="updateLimitToCharacter(this)"/>
         <label for="limitToCharacter" id="limitToCharacterLabel">Limit to {characterName}</label>
       </div>
@@ -146,6 +150,18 @@
        */
       function updateLogToConsole(e){
         logToConsole = e.checked;
+      }
+
+      // Log raw data?
+      let logRawData = document.getElementById('logRawDataCheckbox').checked;
+      /**
+       * onchange handler for when the user updates the "Log to Console"
+       *          checkbox
+       *
+       * @param {HTMLElement} e The logRawDataCheckbox element
+       */
+      function updateLogRawData(e){
+        logRawData = e.checked;
       }
 
       // Limit logs to current character?
@@ -333,7 +349,7 @@
        */
       function logMessage(data, actorId, targetId){
         if(logToConsole){
-          if(isRelatedToCharacter(actorId) || isRelatedToCharacter(targetId)){
+          if(isRelatedToCurrentCharacter(actorId) || isRelatedToCurrentCharacter(targetId)){
             console.log(data);
           }
         }
@@ -348,7 +364,7 @@
        * @return {boolean} Whether or not the ID is relevant based on
        *                   limitToCharacter
        */
-      function isRelatedToCharacter(id){
+      function isRelatedToCurrentCharacter(id){
         if(limitToCharacter){
           if(id !== characterId){
             return false;
@@ -361,7 +377,7 @@
         const messageType = data.line[0];
         if(messageTypes.includes(messageType)){
           if(!paused){
-            if(logToConsole){
+            if(logToConsole && logRawData){
               console.log(messageTypeToFriendlyMap[messageType] ? messageTypeToFriendlyMap[messageType] : 'Unknown message type');
               console.log(data);
             }
@@ -373,7 +389,7 @@
                   usedAbilityMessage.actorId,
                   usedAbilityMessage.targetId
                 );
-                if(isRelatedToCharacter(usedAbilityMessage.actorId) || isRelatedToCharacter(usedAbilityMessage.targetId)){
+                if(isRelatedToCurrentCharacter(usedAbilityMessage.actorId) || isRelatedToCurrentCharacter(usedAbilityMessage.targetId)){
                   abilities.push(usedAbilityMessage);
 
                   appendElementToMain(
@@ -391,7 +407,7 @@
                   gainedEffectMessage.actorId,
                   gainedEffectMessage.targetId
                 );
-                if(isRelatedToCharacter(gainedEffectMessage.actorId) || isRelatedToCharacter(gainedEffectMessage.targetId)){
+                if(isRelatedToCurrentCharacter(gainedEffectMessage.actorId) || isRelatedToCurrentCharacter(gainedEffectMessage.targetId)){
                   effects.push(gainedEffectMessage);
 
                   appendElementToMain(
@@ -409,7 +425,7 @@
                   lostEffectMessage.actorId,
                   lostEffectMessage.targetId
                 );
-                if(isRelatedToCharacter(lostEffectMessage.actorId) || isRelatedToCharacter(lostEffectMessage.targetId)){
+                if(isRelatedToCurrentCharacter(lostEffectMessage.actorId) || isRelatedToCurrentCharacter(lostEffectMessage.targetId)){
                   effects.push(lostEffectMessage);
 
                   appendElementToMain(
