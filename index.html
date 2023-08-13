@@ -619,14 +619,14 @@
 
         // Actor using an Ability on a Target
         const friendlyActorElement = document.createElement('span');
-        let friendlyAmountText = usedAbilityMessage.targetName ? ` on <b>${usedAbilityMessage.targetName}</b>` : '';
-        friendlyAmountText += !isNaN(usedAbilityMessage.amount) ? ' for <b>' + usedAbilityMessage.amount + '</b>': '';
-        friendlyActorElement.innerHTML = `
+        let friendlyText = `
           <b>${usedAbilityMessage.actorName}</b>
           used
           <b>${usedAbilityMessage.actionName}</b>
-          ${friendlyAmountText}
         `;
+        friendlyText += usedAbilityMessage.targetName ? ` on <b>${usedAbilityMessage.targetName}</b>` : '';
+        friendlyText += !isNaN(usedAbilityMessage.amount) ? ' for <b>' + usedAbilityMessage.amount + '</b>': '';
+        friendlyActorElement.innerHTML = friendlyText;
         friendlyViewElement.appendChild(friendlyActorElement);
 
         // Container for the detailed view
@@ -733,13 +733,14 @@
 
         // Actor applying the effect to the target
         const friendlyActorElement = document.createElement('span');
-        friendlyActorElement.innerHTML = `
+        let friendlyText = `
           <b>${effectMessage.actorName}</b>
           applied
           <b>${effectMessage.actionName}</b>
           to
           <b>${effectMessage.targetName}</b>
         `;
+        friendlyActorElement.innerHTML = friendlyText;
         friendlyViewElement.appendChild(friendlyActorElement);
 
         // Container for the detailed view
@@ -838,13 +839,13 @@
 
         // Actor applying the effect to the target
         const friendlyActorElement = document.createElement('span');
-        friendlyActorElement.innerHTML = `
+        let friendlyText = `
           <b>${effectMessage.actorName}</b>
           removed
           <b>${effectMessage.actionName}</b>
           from
-          <b>${effectMessage.targetName}</b>
         `;
+        friendlyActorElement.innerHTML = friendlyText;
         friendlyViewElement.appendChild(friendlyActorElement);
 
         // Container for the detailed view
