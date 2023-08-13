@@ -103,7 +103,8 @@
       //        ex: getting a buff like Rampart or Sentinel or Arm's Length
       //    30: lose an effect
       //        ex: Rampart or Sentinel or Arm's Length wears off
-      // TODO function to parse this message type?
+
+
       //    ex: "21|2023-01-16T13:37:49.1410000-05:00|107CDF82|Tonk Tonkers|16|Bulwark|107CDF82|Tonk Tonkers|640F|4D8000|0|0|0|0|0|0|0|0|0|0|0|0|0|0|98900|98900|10000|10000|||-87.90|51.12|1.50|-1.54|98900|98900|10000|10000|||-87.90|51.12|1.50|-1.54|0000130D|0|1|81681bf499192d9b"
       //        messageType: 21
       //        timestamp: 2023-08-08T17:49:10.1180000-04:00
@@ -115,7 +116,6 @@
       //        targetName: Tonk Tonkers
       //        this is some kind of flag ???: 4
       //        amount (hex, trailing 0s?): 6D510000
-
       /**
        * Parse a "Gained an Effect" log line
        *
@@ -160,7 +160,6 @@
       //        actor?Name: Tonk Tonkers
       //        targetId: 107CDF82
       //        targetName: Tonk Tonkers
-
       /**
        * Parse a "Gained an Effect" log line
        *
@@ -203,7 +202,6 @@
         }
       }
 
-      // TODO function to parse this message type
       //    ex: "30|2023-01-16T13:37:53.8630000-05:00|4D|Bulwark|0.00|107CDF82|Tonk Tonkers|107CDF82|Tonk Tonkers|00|98900|98900|ebfc01ff60fa6c8f"
       //        messageType: 30
       //        timestamp: 2023-01-16T13:37:53.8630000-05:00
@@ -214,6 +212,26 @@
       //        actor?Name: Tonk Tonkers
       //        target?Id: 107CDF82
       //        target?Name: Tonk Tonkers
+      /**
+       * Parse a "Lost an Effect" log line
+       *
+       * @param {object} message The raw "Lost an Effect" message object
+       *
+       * @return {object} A parsed and labeled object containing the data.
+       */
+      function parseMessageLostEffect(message){
+        return {
+          messageType: message.line[0],
+          timestamp: new Date(message.line[1]),
+          actionId: message.line[2],
+          actionName: message.line[3],
+          duration: message.line[4],
+          actorId: message.line[5],
+          actorName: message.line[6],
+          targetId: message.line[7],
+          targetName: message.line[8]
+        };
+      }
 
       const MESSAGE_TYPE_USE_ABILITY = '21'; // Character uses ability
       const MESSAGE_TYPE_GAIN_EFFECT = '26'; // Character gains effect
@@ -279,6 +297,18 @@
                 console.log('Lost an effect');
                 console.log(data);
               }
+              const lostEffectMessage = parseMessageLostEffect(data);
+              if(debug){
+                console.log(lostEffectMessage);
+              }
+              effects.push(lostEffectMessage);
+
+              appendElementToMain(
+                createLostEffectElement(
+                  data
+                )
+              );
+
               break;
           }
         }
@@ -605,8 +635,109 @@
         return gainedEffectElement;
       }
 
-      function createLostEffectElement(effectMessage){
+      /**
+       * Given a gainedEffectMessage, create an HTML table with it's data
+       *
+       * @param {object} effectMessage The parsed gained effect message.
+       *
+       * @return {HTMLObject} The newly created table element
+       */
+      function createLostEffectTable(effectMessage){
+        const detailsTable = document.createElement('table');
+        detailsTable.classList.add('itemDetailsTable');
 
+        const firstRow = createTableRowFromArray([
+          'Actor',
+          effectMessage.actorName,
+          'Action',
+          effectMessage.actionName
+        ]);
+        detailsTable.appendChild(firstRow);
+
+        const secondRow = createTableRowFromArray([
+          'Actor ID',
+          effectMessage.actorId,
+          'Action ID',
+          effectMessage.actionId
+        ]);
+        detailsTable.appendChild(secondRow);
+
+        const thirdRow = createTableRowFromArray([
+          'Target',
+          effectMessage.targetName,
+          'Duration',
+          effectMessage.duration
+        ]);
+        detailsTable.appendChild(thirdRow);
+
+        const fourthRow = createTableRowFromArray([
+          'Target ID',
+          effectMessage.targetId,
+          'Message Type',
+          effectMessage.messageType
+        ]);
+        detailsTable.appendChild(fourthRow);
+
+        // Fifth Row ///////////////////////////////////////////////////////////
+        const fifthRow = document.createElement('tr');
+        detailsTable.appendChild(fifthRow);
+
+        // Timestamp
+        const timestampColumnElement = document.createElement('td');
+        timestampColumnElement.colSpan = 4;
+        fifthRow.appendChild(timestampColumnElement);
+        const timestampElement = document.createTextNode(effectMessage.timestamp);
+        timestampColumnElement.appendChild(timestampElement);
+
+        return detailsTable;
+      }
+
+      function createLostEffectElement(rawData){
+        const effectMessage = parseMessageLostEffect(rawData);
+        // Container for the Gained Effect messages
+        const lostEffectElement = document.createElement('details');
+        lostEffectElement.classList.add('card');
+        lostEffectElement.classList.add('itemContainer');
+
+        // Container for the friendly view elements
+        const friendlyViewElement = document.createElement('summary');
+        friendlyViewElement.classList.add('itemFriendlyView');
+        lostEffectElement.appendChild(friendlyViewElement);
+
+        // Timestamp
+        const friendlyTimestampElement = document.createElement('span');
+        const timestamp = new Date(effectMessage.timestamp);
+        friendlyTimestampElement.innerHTML = convertDateToFriendlyWithMilliseconds(timestamp);
+        friendlyViewElement.appendChild(friendlyTimestampElement);
+
+        // Actor applying the effect to the target
+        const friendlyActorElement = document.createElement('span');
+        friendlyActorElement.innerHTML = `
+          <b>${effectMessage.actorName}</b>
+          removed
+          <b>${effectMessage.actionName}</b>
+          from
+          <b>${effectMessage.targetName}</b>
+        `;
+        friendlyViewElement.appendChild(friendlyActorElement);
+
+        // Container for the detailed view
+        const detailedView = document.createElement('div');
+        lostEffectElement.appendChild(detailedView);
+
+        // Table to hold the message information
+        const lostEffectTable = createLostEffectTable(effectMessage)
+        detailedView.appendChild(lostEffectTable);
+
+        // Parsed message view
+        const parsedView = createCodeBlock(effectMessage);
+        lostEffectElement.appendChild(parsedView);
+
+        // Raw message view
+        const rawView = createCodeBlock(rawData);
+        lostEffectElement.appendChild(rawView);
+
+        return lostEffectElement;
       }
 
       /*
