@@ -13,6 +13,12 @@
       #main{
       }
 
+      #toolbar{
+        background-color: white;
+        border-bottom: 1px solid #c2c2c2;
+        padding: 8px;
+      }
+
       .card{
         background-color: white;
         border: 1px solid #c2c2c2;
@@ -79,14 +85,24 @@
     </style>
   </head>
   <body>
+    <div id="toolbar">
+      <input type="checkbox" id="logToConsoleCheckbox" name="logToConsole" checked onchange="updateLogToConsole(this)"=>
+      <label for="logToConsoleCheckbox">Log to Console</label>
+    </div>
     <div id="main">
     </div>
   </body>
   <footer>
     <script>
-      const debug = true;
-      if(debug){
-        console.log('debug', debug);
+      let logToConsole = true;
+      /**
+       * onchange handler for when the user updates the "Log to Console"
+       *          checkbox
+       *
+       * @param {HTMLElement} e The logToConsoleCheckbox element
+       */
+      function updateLogToConsole(e){
+        logToConsole = e.checked;
       }
 
       // Will be set to the name of the current character
@@ -258,14 +274,14 @@
       addOverlayListener(eventType, (data) => {
         const messageType = data.line[0];
         if(messageTypes.includes(messageType)){
-          if(debug){
+          if(logToConsole){
             console.log(messageTypeToFriendlyMap[messageType] ? messageTypeToFriendlyMap[messageType] : 'Unknown message type');
             console.log(data);
           }
           switch(messageType){
             case MESSAGE_TYPE_USE_ABILITY:
               const usedAbilityMessage = parseMessageUsedAbility(data);
-              if(debug){
+              if(logToConsole){
                 console.log(usedAbilityMessage);
               }
               abilities.push(usedAbilityMessage);
@@ -279,7 +295,7 @@
               break;
             case MESSAGE_TYPE_GAIN_EFFECT:
               const gainedEffectMessage = parseMessageGainEffect(data);
-              if(debug){
+              if(logToConsole){
                 console.log(gainedEffectMessage);
               }
               effects.push(gainedEffectMessage);
@@ -293,7 +309,7 @@
               break;
             case MESSAGE_TYPE_LOSE_EFFECT:
               const lostEffectMessage = parseMessageLostEffect(data);
-              if(debug){
+              if(logToConsole){
                 console.log(lostEffectMessage);
               }
               effects.push(lostEffectMessage);
