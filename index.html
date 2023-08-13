@@ -14,6 +14,7 @@
         background-color: white;
         border-bottom: 1px solid #c2c2c2;
         padding: 8px;
+        display: flex;
       }
 
       .card{
@@ -33,6 +34,14 @@
       .toolbarItem:not(:last-child){
         padding-right: 8px;
         border-right: 1px solid #f2f2f2;
+      }
+      .toolbarItem > input,
+      .toolbarItem > label{
+        cursor: pointer;
+      }
+      .toolbarCollapseExpandWrapper{
+        flex: 1;
+        text-align: right;
       }
 
       .itemFriendlyView{
@@ -94,7 +103,7 @@
     </style>
   </head>
   <body>
-    <div id="toolbar">
+    <div id="toolbar" class="preventSelect">
       <div class="toolbarItem">
         <button id="pauseButton"  name="pause" onclick="updatePaused(this)" data-pause="true">Pause</button>
         <button id="resumeButton" name="pause" onclick="updatePaused(this)" class="displayNone">Resume</button>
@@ -125,9 +134,16 @@
         logRawData: document.getElementById('logRawDataCheckbox').checked // Log raw data?
       }
 
+      /**
+       * Update an option
+       *
+       * @param {string} optionName The option to update
+       * @param {*} value The value to set the option to
+       */
       function updateOption(optionName, value){
         options[optionName] = value;
       }
+
       /**
        * onclick handler for when the user clicks the Pause/Resume buttons
        *
