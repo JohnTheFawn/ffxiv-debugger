@@ -130,6 +130,15 @@
         <input type="checkbox" id="limitToCharacterCheckbox" name="limitToCharacter" onchange="updateOption('limitToCharacter', this.checked)"/>
         <label for="limitToCharacterCheckbox" id="limitToCharacterLabel">Limit to {characterName}</label>
       </div>
+      <div class="toolbarItem">
+        <label for="inputFilterFriendlyText" id="inputFilterFriendlyTextLabel">Search: </label>
+        <input
+          type="search"
+          id="inputFilterFriendlyText"
+          name="filterFriendlyText"
+          onchange="updateFilter('filterFriendlyText', this.value, 200)"
+          onkeyup="updateFilter('filterFriendlyText', this.value, 200)"/>
+      </div>
     </div>
     <div id="main">
     </div>
@@ -199,6 +208,7 @@
        */
       function parseMessageStartsCasting(message){
         return {
+          raw: message,
           messageType: message.line[0],
           timestamp: new Date(message.line[1]),
           actorId: parseInt(message.line[2], 16),
@@ -244,6 +254,7 @@
         const decimalAmount = parseInt(rawAmount.join(''), 16);
 
         return {
+          raw: message,
           messageType: message.line[0],
           timestamp: new Date(message.line[1]),
           actorId: parseInt(message.line[2], 16),
@@ -276,6 +287,7 @@
        */
       function parseMessageGainEffect(message){
         return {
+          raw: message,
           messageType: message.line[0],
           timestamp: new Date(message.line[1]),
           actionId: message.line[2],
@@ -330,6 +342,7 @@
        */
       function parseMessageLostEffect(message){
         return {
+          raw: message,
           messageType: message.line[0],
           timestamp: new Date(message.line[1]),
           actionId: message.line[2],
@@ -342,6 +355,13 @@
         };
       }
 
+      /**
+       * Sometimes the values are stored as hex and shifted some number of bits
+       * This function will shift the bits and then convert the hex
+       *
+       * @param {string} hexString The hex string to convert to decimal
+       * @param {int} shiftAmount How many places to shift the hex values
+       */
       function unshiftHexAndConvert(hexString, shiftAmount){
         // The value is stored in hex
         // The value is also stored somewhat big endian
@@ -365,6 +385,7 @@
       const MESSAGE_TYPE_FLYING_TEXT = '07'; // ??? TODO investigate
       const MESSAGE_TYPE_STARTS_CASTING = '20'; // Starts Casting
       const MESSAGE_TYPE_USE_ABILITY = '21'; // Character uses ability
+      const MESSAGE_TYPE_UNKNOWN_24 = '24'; // ??? TODO investigate
       const MESSAGE_TYPE_GAIN_EFFECT = '26'; // Character gains effect
       const MESSAGE_TYPE_LOSE_EFFECT = '30'; // Character loses effect
       const MESSAGE_TYPE_UNKNOWN_37 = '37'; // ??? TODO investigate
@@ -383,10 +404,11 @@
         MESSAGE_TYPE_FLYING_TEXT, // ??? TODO investigate
         MESSAGE_TYPE_STARTS_CASTING,
         MESSAGE_TYPE_USE_ABILITY,
+        MESSAGE_TYPE_UNKNOWN_24, // ??? TODO investigate
         MESSAGE_TYPE_GAIN_EFFECT,
         MESSAGE_TYPE_LOSE_EFFECT,
-        MESSAGE_TYPE_UNKNOWN_37,
-        MESSAGE_TYPE_UNKNOWN_38,
+        MESSAGE_TYPE_UNKNOWN_37, // ??? TODO investigate
+        MESSAGE_TYPE_UNKNOWN_38, // ??? TODO investigate
         MESSAGE_TYPE_SERVER_TICK,
         MESSAGE_TYPE_CHANGED_ZONE
       ];
@@ -401,6 +423,7 @@
         [MESSAGE_TYPE_FLYING_TEXT]: 'MESSAGE_TYPE_FLYING_TEXT',
         [MESSAGE_TYPE_STARTS_CASTING]: 'Starts casting',
         [MESSAGE_TYPE_USE_ABILITY]: 'Used an ability',
+        [MESSAGE_TYPE_UNKNOWN_24]: 'MESSAGE_TYPE_UNKNOWN_24',
         [MESSAGE_TYPE_GAIN_EFFECT]: 'Gained an effect',
         [MESSAGE_TYPE_LOSE_EFFECT]: 'Lost an effect',
         [MESSAGE_TYPE_UNKNOWN_37]: 'MESSAGE_TYPE_UNKNOWN_37',
@@ -416,6 +439,8 @@
         MESSAGE_TYPE_LOG_LINE,
         MESSAGE_TYPE_ADD_COMBATANT,
         MESSAGE_TYPE_REMOVE_COMBATANT,
+        MESSAGE_TYPE_UNKNOWN_37,
+        MESSAGE_TYPE_UNKNOWN_38,
         MESSAGE_TYPE_SERVER_TICK
       ];
 
@@ -424,6 +449,58 @@
       const targets = [];
       const actions = [];
       const effects = [];
+
+      // Will hold all newly created elements that are added to the main area
+      const elements = [];
+      const filters = {
+        filterFriendlyText: null,
+        filterMessageType: null,
+        filterActorName: null,
+        filterActorId: null,
+        filterTargetName: null,
+        filterTargetId: null,
+        filterAction: null,
+      }
+
+      let updateFilterTimeout = null;
+      function updateFilter(filterName, value, buffer){
+        filters[filterName] = value;
+        if(buffer){
+          if(updateFilterTimeout){
+            clearTimeout(updateFilterTimeout);
+          }
+          updateFilterTimeout = setTimeout(() => {
+            filterElements();
+            updateFilterTimeout = null;
+          }, buffer);
+        }
+        else{
+          filterElements();
+        }
+      }
+
+      function filterElements(){
+        elements.forEach(element => {
+          let hideElement = false;
+          console.log(element.dataset.messageType, element.dataset.actorName, element.dataset.friendlyText);
+          if(filters.filterFriendlyText && !(element.dataset.friendlyText || '').includes(filters.filterFriendlyText)){
+            hideElement = true;
+          }
+          if(filters.filterMessageType && !(element.dataset.messageType || '').includes(filters.filterMessageType)){
+            hideElement = true;
+          }
+          if(filters.filterActorName && !(element.dataset.actorName || '').includes(filters.filterActorName)){
+            hideElement = true;
+          }
+
+          if(hideElement){
+            element.classList.add('displayNone');
+          }
+          else{
+            element.classList.remove('displayNone');
+          }
+        });
+      }
 
       /**
        * Convenience function to log messages. Checks whether or not
@@ -485,7 +562,7 @@
 
                   appendElementToMain(
                     createStartsCastingElement(
-                      data
+                      startsCastingMessage
                     )
                   );
                 }
@@ -503,7 +580,7 @@
 
                   appendElementToMain(
                     createUsedAbilityElement(
-                      data
+                      usedAbilityMessage
                     )
                   );
                 }
@@ -521,7 +598,7 @@
 
                   appendElementToMain(
                     createGainedEffectElement(
-                      data
+                      gainedEffectMessage
                     )
                   );
                 }
@@ -539,7 +616,7 @@
 
                   appendElementToMain(
                     createLostEffectElement(
-                      data
+                      lostEffectMessage
                     )
                   );
                 }
@@ -572,10 +649,9 @@
        * @param {string} content The string to add to the page
        */
       function appendStringToMain(content){
-        const mainElement = document.getElementById('main');
         const newElement = document.createElement('div');
         newElement.innerHTML = content;
-        mainElement.appendChild(newElement);
+        appendElementToMain(newElement);
       }
 
       /**
@@ -584,10 +660,9 @@
        * @param {object} json The json to be added to the page
        */
       function appendJsonToMain(json){
-        const mainElement = document.getElementById('main');
         const newElement = document.createElement('code');
         newElement.innerHTML = JSON.stringify(json);
-        mainElement.appendChild(newElement);
+        appendElementToMain.appendChild(newElement);
       }
 
       /**
@@ -596,6 +671,7 @@
        * @param {HTMLElement} element The element to append
        */
       function appendElementToMain(element){
+        elements.push(element);
         document.getElementById('main').appendChild(element);
       }
 
@@ -721,8 +797,7 @@
        *
        * @return {HTMLObject} The newly created element
        */
-      function createStartsCastingElement(rawData){
-        const startsCastingMessage = parseMessageStartsCasting(rawData);
+      function createStartsCastingElement(message){
         // Container for the starts casting messages
         const startsCastingElement = document.createElement('details');
         startsCastingElement.classList.add('card');
@@ -735,18 +810,18 @@
 
         // Timestamp
         const friendlyTimestampElement = document.createElement('span');
-        const timestamp = new Date(startsCastingMessage.timestamp);
+        const timestamp = new Date(message.timestamp);
         friendlyTimestampElement.innerHTML = convertDateToFriendlyWithMilliseconds(timestamp);
         friendlyViewElement.appendChild(friendlyTimestampElement);
 
         // Actor starts casting an action on a Target
         const friendlyActorElement = document.createElement('span');
         let friendlyText = `
-          <b>${startsCastingMessage.actorName}</b>
+          <b>${message.actorName}</b>
           starts casting
-          <b>${startsCastingMessage.actionName}</b>
+          <b>${message.actionName}</b>
         `;
-        friendlyText += startsCastingMessage.targetName ? ` on <b>${startsCastingMessage.targetName}</b>` : '';
+        friendlyText += message.targetName ? ` on <b>${message.targetName}</b>` : '';
         friendlyActorElement.innerHTML = friendlyText;
         friendlyViewElement.appendChild(friendlyActorElement);
 
@@ -755,20 +830,27 @@
         startsCastingElement.appendChild(detailedView);
 
         // Table to hold the message information
-        const gainedEffectTable = createStartsCastingTable(startsCastingMessage)
+        const gainedEffectTable = createStartsCastingTable(message)
         detailedView.appendChild(gainedEffectTable);
 
         // Parsed message view
-        const parsedView = createCodeBlock(startsCastingMessage);
+        const parsedView = createCodeBlock(
+          (({raw, ...others }) => others)(message)
+        );
         startsCastingElement.appendChild(parsedView);
 
         // Raw message view
-        const rawView = createCodeBlock(rawData);
+        const rawView = createCodeBlock(message.raw);
         startsCastingElement.appendChild(rawView);
+
+        // Used for searching
+        startsCastingElement.dataset.friendlyText = friendlyViewElement.innerText;
+        Object.entries(message).forEach(([key, value]) => {
+          startsCastingElement.dataset[key] = value;
+        });
 
         return startsCastingElement;
       }
-
 
       /**
        * Given a usedAbilityMessage, create an HTML table with it's data
@@ -835,8 +917,7 @@
        *
        * @return {HTMLObject} The newly created element
        */
-      function createUsedAbilityElement(rawData){
-        const usedAbilityMessage = parseMessageUsedAbility(rawData);
+      function createUsedAbilityElement(message){
         // Container for the used messages
         const usedAbilityElement = document.createElement('details');
         usedAbilityElement.classList.add('card');
@@ -849,19 +930,19 @@
 
         // Timestamp
         const friendlyTimestampElement = document.createElement('span');
-        const timestamp = new Date(usedAbilityMessage.timestamp);
+        const timestamp = new Date(message.timestamp);
         friendlyTimestampElement.innerHTML = convertDateToFriendlyWithMilliseconds(timestamp);
         friendlyViewElement.appendChild(friendlyTimestampElement);
 
         // Actor using an Ability on a Target
         const friendlyActorElement = document.createElement('span');
         let friendlyText = `
-          <b>${usedAbilityMessage.actorName}</b>
+          <b>${message.actorName}</b>
           used
-          <b>${usedAbilityMessage.actionName}</b>
+          <b>${message.actionName}</b>
         `;
-        friendlyText += usedAbilityMessage.targetName ? ` on <b>${usedAbilityMessage.targetName}</b>` : '';
-        friendlyText += !isNaN(usedAbilityMessage.amount) ? ' for <b>' + usedAbilityMessage.amount + '</b>': '';
+        friendlyText += message.targetName ? ` on <b>${message.targetName}</b>` : '';
+        friendlyText += !isNaN(message.amount) ? ' for <b>' + message.amount + '</b>': '';
         friendlyActorElement.innerHTML = friendlyText;
         friendlyViewElement.appendChild(friendlyActorElement);
 
@@ -870,16 +951,24 @@
         usedAbilityElement.appendChild(detailedView);
 
         // Table to hold the message information
-        const gainedEffectTable = createUsedAbilityTable(usedAbilityMessage)
+        const gainedEffectTable = createUsedAbilityTable(message)
         detailedView.appendChild(gainedEffectTable);
 
         // Parsed message view
-        const parsedView = createCodeBlock(usedAbilityMessage);
+        const parsedView = createCodeBlock(
+          (({raw, ...others }) => others)(message)
+        );
         usedAbilityElement.appendChild(parsedView);
 
         // Raw message view
-        const rawView = createCodeBlock(rawData);
+        const rawView = createCodeBlock(message.raw);
         usedAbilityElement.appendChild(rawView);
+
+        // Used for searching
+        usedAbilityElement.dataset.friendlyText = friendlyViewElement.innerText;
+        Object.entries(message).forEach(([key, value]) => {
+          usedAbilityElement.dataset[key] = value;
+        });
 
         return usedAbilityElement;
       }
@@ -949,8 +1038,7 @@
        *
        * @return {HTMLObject} The newly created element
        */
-      function createGainedEffectElement(rawData){
-        const effectMessage = parseMessageGainEffect(rawData);
+      function createGainedEffectElement(message){
         // Container for the Gained Effect messages
         const gainedEffectElement = document.createElement('details');
         gainedEffectElement.classList.add('card');
@@ -963,27 +1051,27 @@
 
         // Timestamp
         const friendlyTimestampElement = document.createElement('span');
-        const timestamp = new Date(effectMessage.timestamp);
+        const timestamp = new Date(message.timestamp);
         friendlyTimestampElement.innerHTML = convertDateToFriendlyWithMilliseconds(timestamp);
         friendlyViewElement.appendChild(friendlyTimestampElement);
 
         // Actor applying the effect to the target
         const friendlyActorElement = document.createElement('span');
         let friendlyText = '';
-        if(effectMessage.actorName){
+        if(message.actorName){
           friendlyText =`
-            <b>${effectMessage.actorName}</b>
+            <b>${message.actorName}</b>
             applied
-            <b>${effectMessage.actionName}</b>
+            <b>${message.actionName}</b>
             to
-            <b>${effectMessage.targetName}</b>
+            <b>${message.targetName}</b>
           `;
         }
         else{
           friendlyText =`
-            <b>${effectMessage.targetName}</b>
+            <b>${message.targetName}</b>
             gained
-            <b>${effectMessage.actionName}</b>
+            <b>${message.actionName}</b>
           `;
         }
         friendlyActorElement.innerHTML = friendlyText;
@@ -994,16 +1082,24 @@
         gainedEffectElement.appendChild(detailedView);
 
         // Table to hold the message information
-        const gainedEffectTable = createGainedEffectTable(effectMessage)
+        const gainedEffectTable = createGainedEffectTable(message)
         detailedView.appendChild(gainedEffectTable);
 
         // Parsed message view
-        const parsedView = createCodeBlock(effectMessage);
+        const parsedView = createCodeBlock(
+          (({raw, ...others }) => others)(message)
+        );
         gainedEffectElement.appendChild(parsedView);
 
         // Raw message view
-        const rawView = createCodeBlock(rawData);
+        const rawView = createCodeBlock(message.raw);
         gainedEffectElement.appendChild(rawView);
+
+        // Used for searching
+        gainedEffectElement.dataset.friendlyText = friendlyViewElement.innerText;
+        Object.entries(message).forEach(([key, value]) => {
+          gainedEffectElement.dataset[key] = value;
+        });
 
         return gainedEffectElement;
       }
@@ -1073,8 +1169,7 @@
        *
        * @return {HTMLObject} The newly created element
        */
-      function createLostEffectElement(rawData){
-        const effectMessage = parseMessageLostEffect(rawData);
+      function createLostEffectElement(message){
         // Container for the Gained Effect messages
         const lostEffectElement = document.createElement('details');
         lostEffectElement.classList.add('card');
@@ -1087,18 +1182,18 @@
 
         // Timestamp
         const friendlyTimestampElement = document.createElement('span');
-        const timestamp = new Date(effectMessage.timestamp);
+        const timestamp = new Date(message.timestamp);
         friendlyTimestampElement.innerHTML = convertDateToFriendlyWithMilliseconds(timestamp);
         friendlyViewElement.appendChild(friendlyTimestampElement);
 
         // Actor applying the effect to the target
         const friendlyActorElement = document.createElement('span');
         let friendlyText = `
-          <b>${effectMessage.actorName}</b>
+          <b>${message.actorName}</b>
           removed
-          <b>${effectMessage.actionName}</b>
+          <b>${message.actionName}</b>
           from
-          <b>${effectMessage.targetName}</b>
+          <b>${message.targetName}</b>
         `;
         friendlyActorElement.innerHTML = friendlyText;
         friendlyViewElement.appendChild(friendlyActorElement);
@@ -1108,16 +1203,24 @@
         lostEffectElement.appendChild(detailedView);
 
         // Table to hold the message information
-        const lostEffectTable = createLostEffectTable(effectMessage)
+        const lostEffectTable = createLostEffectTable(message)
         detailedView.appendChild(lostEffectTable);
 
         // Parsed message view
-        const parsedView = createCodeBlock(effectMessage);
+        const parsedView = createCodeBlock(
+          (({raw, ...others }) => others)(message)
+        );
         lostEffectElement.appendChild(parsedView);
 
         // Raw message view
-        const rawView = createCodeBlock(rawData);
+        const rawView = createCodeBlock(message.raw);
         lostEffectElement.appendChild(rawView);
+
+        // Used for searching
+        lostEffectElement.dataset.friendlyText = friendlyViewElement.innerText;
+        Object.entries(message).forEach(([key, value]) => {
+          lostEffectElement.dataset[key] = value;
+        });
 
         return lostEffectElement;
       }
