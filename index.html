@@ -181,6 +181,37 @@
       //        ex: Rampart or Sentinel or Arm's Length wears off
 
 
+      //    ex: "20|2023-08-21T15:04:24.6500000-04:00|107CDF82|Tonk Tonkers|05|Teleport|107CDF82|Tonk Tonkers|5.000|-119.53|-130.91|2.00|2.57|36b21e47de5a2d13"
+      //        messageType: 20
+      //        timestamp: 2023-08-21T15:04:24.6500000-04:00
+      //        actorId: 107CDF82
+      //        actorName: Tonk Tonkers
+      //        action id: 05
+      //        action: Teleport
+      //        targetId: 107CDF82
+      //        targetName: Tonk Tonkers
+      /**
+       * Parse a "Starts Casting" log line
+       *
+       * @param {object} message The raw "Starts Casting" message object
+       *
+       * @return {object} A parsed and labeled object containing the data.
+       */
+      function parseMessageStartsCasting(message){
+        return {
+          messageType: message.line[0],
+          timestamp: new Date(message.line[1]),
+          actorId: parseInt(message.line[2], 16),
+          actorName: message.line[3],
+          actionId: message.line[4],
+          actionName: message.line[5],
+          targetId: parseInt(message.line[6], 16),
+          targetName: message.line[7],
+          castTime: parseFloat(message.line[8])
+        };
+      }
+
+
       //    ex: "21|2023-01-16T13:37:49.1410000-05:00|107CDF82|Tonk Tonkers|16|Bulwark|107CDF82|Tonk Tonkers|640F|4D8000|0|0|0|0|0|0|0|0|0|0|0|0|0|0|98900|98900|10000|10000|||-87.90|51.12|1.50|-1.54|98900|98900|10000|10000|||-87.90|51.12|1.50|-1.54|0000130D|0|1|81681bf499192d9b"
       //        messageType: 21
       //        timestamp: 2023-08-08T17:49:10.1180000-04:00
@@ -442,6 +473,24 @@
               );
             }
             switch(messageType){
+              case MESSAGE_TYPE_STARTS_CASTING:
+                const startsCastingMessage = parseMessageStartsCasting(data);
+                logMessage(
+                  startsCastingMessage,
+                  startsCastingMessage.actorId,
+                  startsCastingMessage.targetId
+                );
+                if(isRelatedToCurrentCharacter(startsCastingMessage.actorId) || isRelatedToCurrentCharacter(startsCastingMessage.targetId)){
+                  abilities.push(startsCastingMessage);
+
+                  appendElementToMain(
+                    createStartsCastingElement(
+                      data
+                    )
+                  );
+                }
+
+                break;
               case MESSAGE_TYPE_USE_ABILITY:
                 const usedAbilityMessage = parseMessageUsedAbility(data);
                 logMessage(
@@ -605,6 +654,121 @@
         codeTagContainer.appendChild(codeTag);
         return codeTagContainer
       }
+
+
+      /**
+       * Given a startsCastingMessage, create an HTML table with it's data
+       *
+       * @param {object} startsCastingMessage The parsed used ability message.
+       *
+       * @return {HTMLObject} The newly created table element
+       */
+      function createStartsCastingTable(startsCastingMessage){
+        const detailsTable = document.createElement('table');
+        detailsTable.classList.add('itemDetailsTable');
+
+        const firstRow = createTableRowFromArray([
+          'Actor',
+          startsCastingMessage.actorName,
+          'Action',
+          startsCastingMessage.actionName
+        ]);
+        detailsTable.appendChild(firstRow);
+
+        const secondRow = createTableRowFromArray([
+          'Actor ID',
+          startsCastingMessage.actorId,
+          'Action ID',
+          startsCastingMessage.actionId
+        ]);
+        detailsTable.appendChild(secondRow);
+
+        const thirdRow = createTableRowFromArray([
+          'Target',
+          startsCastingMessage.targetName,
+          'Cast Time',
+          startsCastingMessage.castTime
+        ]);
+        detailsTable.appendChild(thirdRow);
+
+        const fourthRow = createTableRowFromArray([
+          'Target ID',
+          startsCastingMessage.targetId,
+          'Message Type',
+          startsCastingMessage.messageType
+        ]);
+        detailsTable.appendChild(fourthRow);
+
+        // Fifth Row ///////////////////////////////////////////////////////////
+        const fifthRow = document.createElement('tr');
+        detailsTable.appendChild(fifthRow);
+
+        // Timestamp
+        const timestampColumnElement = document.createElement('td');
+        timestampColumnElement.colSpan = 4;
+        fifthRow.appendChild(timestampColumnElement);
+        const timestampElement = document.createTextNode(startsCastingMessage.timestamp);
+        timestampColumnElement.appendChild(timestampElement);
+
+        return detailsTable;
+      }
+
+      /**
+       * Create a "Starts Casting" element to display the "Starts Casting" log
+       * lines
+       *
+       * @param {object} rawData The raw, unparsed, gained effect object
+       *
+       * @return {HTMLObject} The newly created element
+       */
+      function createStartsCastingElement(rawData){
+        const startsCastingMessage = parseMessageStartsCasting(rawData);
+        // Container for the starts casting messages
+        const startsCastingElement = document.createElement('details');
+        startsCastingElement.classList.add('card');
+        startsCastingElement.classList.add('itemContainer');
+
+        // Container for the friendly view elements
+        const friendlyViewElement = document.createElement('summary');
+        friendlyViewElement.classList.add('itemFriendlyView');
+        startsCastingElement.appendChild(friendlyViewElement);
+
+        // Timestamp
+        const friendlyTimestampElement = document.createElement('span');
+        const timestamp = new Date(startsCastingMessage.timestamp);
+        friendlyTimestampElement.innerHTML = convertDateToFriendlyWithMilliseconds(timestamp);
+        friendlyViewElement.appendChild(friendlyTimestampElement);
+
+        // Actor starts casting an action on a Target
+        const friendlyActorElement = document.createElement('span');
+        let friendlyText = `
+          <b>${startsCastingMessage.actorName}</b>
+          starts casting
+          <b>${startsCastingMessage.actionName}</b>
+        `;
+        friendlyText += startsCastingMessage.targetName ? ` on <b>${startsCastingMessage.targetName}</b>` : '';
+        friendlyActorElement.innerHTML = friendlyText;
+        friendlyViewElement.appendChild(friendlyActorElement);
+
+        // Container for the detailed view
+        const detailedView = document.createElement('div');
+        startsCastingElement.appendChild(detailedView);
+
+        // Table to hold the message information
+        const gainedEffectTable = createStartsCastingTable(startsCastingMessage)
+        detailedView.appendChild(gainedEffectTable);
+
+        // Parsed message view
+        const parsedView = createCodeBlock(startsCastingMessage);
+        startsCastingElement.appendChild(parsedView);
+
+        // Raw message view
+        const rawView = createCodeBlock(rawData);
+        startsCastingElement.appendChild(rawView);
+
+        return startsCastingElement;
+      }
+
 
       /**
        * Given a usedAbilityMessage, create an HTML table with it's data
