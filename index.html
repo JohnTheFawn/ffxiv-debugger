@@ -519,10 +519,8 @@
       const filters = {
         filterFriendlyText: null,
         filterMessageType: null,
-        filterActorName: null,
-        filterActorId: null,
-        filterTargetName: null,
-        filterTargetId: null,
+        filterActor: null,
+        filterTarget: null,
         filterAction: null,
       }
 
@@ -562,7 +560,7 @@
         if(filters.filterMessageType && !(element.dataset.messageType || '').includes(filters.filterMessageType)){
           hideElement = true;
         }
-        if(filters.filterActorName && !(element.dataset.actorName || '').includes(filters.filterActorName)){
+        if(filters.filterActor && !(element.dataset.actorId || '').includes(filters.filterActor)){
           hideElement = true;
         }
         return hideElement;
@@ -888,11 +886,7 @@
 
         // Actor starts casting an action on a Target
         const friendlyActorElement = document.createElement('span');
-        let friendlyText = `
-          <b>${message.actorName}</b>
-          starts casting
-          <b>${message.actionName}</b>
-        `;
+        let friendlyText = `<b>${message.actorName}</b> starts casting <b>${message.actionName}</b>`;
         friendlyText += message.targetName ? ` on <b>${message.targetName}</b>` : '';
         friendlyActorElement.innerHTML = friendlyText;
         friendlyViewElement.appendChild(friendlyActorElement);
@@ -1008,10 +1002,7 @@
 
         // Actor using an Ability on a Target
         const friendlyActorElement = document.createElement('span');
-        let friendlyText = `
-          <b>${message.actorName}</b>
-          used
-          <b>${message.actionName}</b>
+        let friendlyText = `<b>${message.actorName}</b> used <b>${message.actionName}</b>
         `;
         friendlyText += message.targetName ? ` on <b>${message.targetName}</b>` : '';
         friendlyText += !isNaN(message.amount) ? ' for <b>' + message.amount + '</b>': '';
@@ -1131,20 +1122,10 @@
         const friendlyActorElement = document.createElement('span');
         let friendlyText = '';
         if(message.actorName){
-          friendlyText =`
-            <b>${message.actorName}</b>
-            applied
-            <b>${message.actionName}</b>
-            to
-            <b>${message.targetName}</b>
-          `;
+          friendlyText =`<b>${message.actorName}</b> applied <b>${message.actionName}</b> to <b>${message.targetName}</b>`;
         }
         else{
-          friendlyText =`
-            <b>${message.targetName}</b>
-            gained
-            <b>${message.actionName}</b>
-          `;
+          friendlyText =`<b>${message.targetName}</b> gained <b>${message.actionName}</b>`;
         }
         friendlyActorElement.innerHTML = friendlyText;
         friendlyViewElement.appendChild(friendlyActorElement);
@@ -1260,13 +1241,7 @@
 
         // Actor applying the effect to the target
         const friendlyActorElement = document.createElement('span');
-        let friendlyText = `
-          <b>${message.actorName}</b>
-          removed
-          <b>${message.actionName}</b>
-          from
-          <b>${message.targetName}</b>
-        `;
+        let friendlyText = `<b>${message.actorName}</b> removed <b>${message.actionName}</b> from <b>${message.targetName}</b>`;
         friendlyActorElement.innerHTML = friendlyText;
         friendlyViewElement.appendChild(friendlyActorElement);
 
