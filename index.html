@@ -14,6 +14,7 @@
         background-color: white;
         border-bottom: 1px solid #c2c2c2;
         display: flex;
+        flex-direction: column;
         position: absolute;
         top: 0px;
         width: 100%;
@@ -38,20 +39,44 @@
         box-shadow: 2px 2px 3px 0px rgba(0,0,0,0.2);
       }
 
-      .toolbarItem{
-        display: inline-block;
+      #toolbarHomeRow{
+        display: flex;
       }
-      .toolbarItem:not(:last-child){
+      #toolbarHomeRow > .toolbarItem:not(:last-child){
         padding-right: 8px;
         border-right: 1px solid #f2f2f2;
+      }
+
+      .toolbarItem{
+        display: inline-block;
       }
       .toolbarItem > input,
       .toolbarItem > label{
         cursor: pointer;
       }
-      .toolbarCollapseExpandWrapper{
-        flex: 1;
-        text-align: right;
+
+      #toolbarFilters{
+        position: absolute;
+        top: 42px;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0px 8px 8px 8px;
+      }
+      #toolbarFiltersWrapper{
+        background-color: white;
+        border: 1px solid #c2c2c2;
+        border-bottom-right-radius: 8px;
+        border-bottom-left-radius: 8px;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+      }
+      #toolbarFiltersWrapper > .toolbarRow:not(:last-child){
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #f2f2f2;
+        display: flex;
+        flex-direction: row;
       }
 
       .itemFriendlyView{
@@ -114,30 +139,58 @@
   </head>
   <body>
     <div id="toolbar" class="preventSelect">
-      <div class="toolbarItem">
-        <button id="pauseButton"  name="pause" onclick="updatePaused(this)" data-pause="true">Pause</button>
-        <button id="resumeButton" name="pause" onclick="updatePaused(this)" class="displayNone">Resume</button>
+      <div id="toolbarHomeRow">
+        <div class="toolbarItem">
+          <button id="pauseButton"  name="pause" onclick="updatePaused(this)" data-pause="true">Pause</button>
+          <button id="resumeButton" name="pause" onclick="updatePaused(this)" class="displayNone">Resume</button>
+        </div>
+        <div class="toolbarItem">
+          <input type="checkbox" id="logToConsoleCheckbox" name="logToConsole" checked onchange="updateOption('logToConsole', this.checked)"/>
+          <label for="logToConsoleCheckbox">Log to Console</label>
+        </div>
+        <div class="toolbarItem">
+          <input type="checkbox" id="logRawDataCheckbox" name="logRawData" checked onchange="updateOption('logRawData', this.checked)"/>
+          <label for="logRawDataCheckbox">Log Raw Data</label>
+        </div>
+        <div class="toolbarItem">
+          <input type="checkbox" id="limitToCharacterCheckbox" name="limitToCharacter" onchange="updateOption('limitToCharacter', this.checked)"/>
+          <label for="limitToCharacterCheckbox" id="limitToCharacterLabel">Limit to {characterName}</label>
+        </div>
+        <div class="toolbarItem" style="flex: 1; text-align: right;">
+          <button type="checkbox" id="buttonToggleFilters" onclick="toggleFilters()">
+            Filters
+          </button>
+        </div>
       </div>
-      <div class="toolbarItem">
-        <input type="checkbox" id="logToConsoleCheckbox" name="logToConsole" checked onchange="updateOption('logToConsole', this.checked)"/>
-        <label for="logToConsoleCheckbox">Log to Console</label>
-      </div>
-      <div class="toolbarItem">
-        <input type="checkbox" id="logRawDataCheckbox" name="logRawData" checked onchange="updateOption('logRawData', this.checked)"/>
-        <label for="logRawDataCheckbox">Log Raw Data</label>
-      </div>
-      <div class="toolbarItem">
-        <input type="checkbox" id="limitToCharacterCheckbox" name="limitToCharacter" onchange="updateOption('limitToCharacter', this.checked)"/>
-        <label for="limitToCharacterCheckbox" id="limitToCharacterLabel">Limit to {characterName}</label>
-      </div>
-      <div class="toolbarItem">
-        <label for="inputFilterFriendlyText" id="inputFilterFriendlyTextLabel">Search: </label>
-        <input
-          type="search"
-          id="inputFilterFriendlyText"
-          name="filterFriendlyText"
-          onchange="updateFilter('filterFriendlyText', this.value, 200)"
-          onkeyup="updateFilter('filterFriendlyText', this.value, 200)"/>
+    </div>
+    <div id="toolbarFilters" class="displayNone">
+      <div id="toolbarFiltersWrapper">
+        <div class="toolbarRow">
+          <div class="toolbarItem" style="flex: 1; display: flex;">
+            <label for="inputFilterFriendlyText" id="inputFilterFriendlyTextLabel">Search: </label>
+            <input
+              type="search"
+              id="inputFilterFriendlyText"
+              name="filterFriendlyText"
+              style="flex: 1; margin-left: 8px;"
+              onchange="updateFilter('filterFriendlyText', this.value, 200)"
+              onkeyup="updateFilter('filterFriendlyText', this.value, 200)"/>
+          </div>
+        </div>
+        <div class="toolbarRow">
+          <div class="toolbarItem" style="flex: 1; display: flex;">
+            <label for="inputMessageTypeDropdown" id="inputMessageTypeDropdownLabel">Message Type: </label>
+            <select
+              type="search"
+              id="inputMessageTypeDropdown"
+              name="messageTypeDropdown"
+              style="flex: 1; margin-left: 8px;"
+              onchange="updateFilter('filterMessageType', this.value)"
+            >
+              <option value=""/>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
     <div id="main">
@@ -413,6 +466,7 @@
         MESSAGE_TYPE_CHANGED_ZONE
       ];
 
+
       const messageTypeToFriendlyMap = {
         [MESSAGE_TYPE_LOG_LINE]: 'Log Line',
         [MESSAGE_TYPE_CHANGE_PRIMARY_PLAYER]: 'Primary Player Changed',
@@ -443,6 +497,16 @@
         MESSAGE_TYPE_UNKNOWN_38,
         MESSAGE_TYPE_SERVER_TICK
       ];
+
+      const inputMessageTypeDropdown = document.getElementById('inputMessageTypeDropdown');
+      messageTypes.forEach(messageType => {
+        if(!messageTypeBlackList.includes(messageType)){
+          const newOption = document.createElement('option');
+          newOption.value = messageType;
+          newOption.innerHTML = messageType + ' - ' + messageTypeToFriendlyMap[messageType];
+          inputMessageTypeDropdown.appendChild(newOption);
+        }
+      });
 
       const abilities = [];
       const actors = [];
@@ -481,25 +545,31 @@
 
       function filterElements(){
         elements.forEach(element => {
-          let hideElement = false;
-          console.log(element.dataset.messageType, element.dataset.actorName, element.dataset.friendlyText);
-          if(filters.filterFriendlyText && !(element.dataset.friendlyText || '').toLowerCase().includes(filters.filterFriendlyText.toLowerCase())){
-            hideElement = true;
-          }
-          if(filters.filterMessageType && !(element.dataset.messageType || '').includes(filters.filterMessageType)){
-            hideElement = true;
-          }
-          if(filters.filterActorName && !(element.dataset.actorName || '').includes(filters.filterActorName)){
-            hideElement = true;
-          }
-
-          if(hideElement){
+          if(shouldHideElement(element)){
             element.classList.add('displayNone');
           }
           else{
             element.classList.remove('displayNone');
           }
         });
+      }
+
+      function shouldHideElement(element){
+        let hideElement = false;
+        if(filters.filterFriendlyText && !(element.dataset.friendlyText || '').toLowerCase().includes(filters.filterFriendlyText.toLowerCase())){
+          hideElement = true;
+        }
+        if(filters.filterMessageType && !(element.dataset.messageType || '').includes(filters.filterMessageType)){
+          hideElement = true;
+        }
+        if(filters.filterActorName && !(element.dataset.actorName || '').includes(filters.filterActorName)){
+          hideElement = true;
+        }
+        return hideElement;
+      }
+
+      function toggleFilters(){
+        document.getElementById('toolbarFilters').classList.toggle('displayNone');
       }
 
       /**
@@ -672,6 +742,9 @@
        */
       function appendElementToMain(element){
         elements.push(element);
+        if(shouldHideElement(element)){
+          element.classList.add('displayNone');
+        }
         document.getElementById('main').appendChild(element);
       }
 
