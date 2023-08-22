@@ -429,8 +429,8 @@
           raw: message,
           messageType: message.line[0],
           timestamp: new Date(message.line[1]),
-          actionId: parseInt(message.line[2], 16),
-          actionName: message.line[3],
+          effectId: parseInt(message.line[2], 16),
+          effectName: message.line[3],
           duration: message.line[4],
           actorId: parseInt(message.line[5], 16),
           actorName: message.line[6],
@@ -484,8 +484,8 @@
           raw: message,
           messageType: message.line[0],
           timestamp: new Date(message.line[1]),
-          actionId: parseInt(message.line[2], 16),
-          actionName: message.line[3],
+          effectId: parseInt(message.line[2], 16),
+          effectName: message.line[3],
           duration: message.line[4],
           actorId: parseInt(message.line[5], 16),
           actorName: message.line[6],
@@ -811,7 +811,7 @@
                 if(isRelatedToCurrentCharacter(gainedEffectMessage.actorId) || isRelatedToCurrentCharacter(gainedEffectMessage.targetId)){
                   addActor(gainedEffectMessage.actorId, gainedEffectMessage.actorName);
                   addTarget(gainedEffectMessage.targetId, gainedEffectMessage.targetName);
-                  addEffect(gainedEffectMessage.actionId, gainedEffectMessage.actionName);
+                  addEffect(gainedEffectMessage.effectId, gainedEffectMessage.effectName);
                   appendElementToMain(
                     createGainedEffectElement(
                       gainedEffectMessage
@@ -830,7 +830,7 @@
                 if(isRelatedToCurrentCharacter(lostEffectMessage.actorId) || isRelatedToCurrentCharacter(lostEffectMessage.targetId)){
                   addActor(lostEffectMessage.actorId, lostEffectMessage.actorName);
                   addTarget(lostEffectMessage.targetId, lostEffectMessage.targetName);
-                  addEffect(lostEffectMessage.actionId, lostEffectMessage.actionName);
+                  addEffect(lostEffectMessage.effectId, lostEffectMessage.effectName);
                   appendElementToMain(
                     createLostEffectElement(
                       lostEffectMessage
@@ -1198,16 +1198,16 @@
         const firstRow = createTableRowFromArray([
           'Actor',
           effectMessage.actorName,
-          'Action',
-          effectMessage.actionName
+          'Effect',
+          effectMessage.effectName
         ]);
         detailsTable.appendChild(firstRow);
 
         const secondRow = createTableRowFromArray([
           'Actor ID',
           effectMessage.actorId,
-          'Action ID',
-          effectMessage.actionId
+          'Effect ID',
+          effectMessage.effectId
         ]);
         detailsTable.appendChild(secondRow);
 
@@ -1270,7 +1270,7 @@
         const friendlyActorElement = document.createElement('span');
         let friendlyText = '';
         if(message.actorName){
-          friendlyText =`<b>${message.actorName}</b> applied <b>${message.actionName}</b> to <b>${message.targetName}</b>`;
+          friendlyText =`<b>${message.actorName}</b> applied <b>${message.effectName}</b> to <b>${message.targetName}</b>`;
         }
         else{
           friendlyText =`<b>${message.targetName}</b> gained <b>${message.actionName}</b>`;
@@ -1319,16 +1319,16 @@
         const firstRow = createTableRowFromArray([
           'Actor',
           effectMessage.actorName,
-          'Action',
-          effectMessage.actionName
+          'Effect',
+          effectMessage.effectName
         ]);
         detailsTable.appendChild(firstRow);
 
         const secondRow = createTableRowFromArray([
           'Actor ID',
           effectMessage.actorId,
-          'Action ID',
-          effectMessage.actionId
+          'Effect ID',
+          effectMessage.effectId
         ]);
         detailsTable.appendChild(secondRow);
 
