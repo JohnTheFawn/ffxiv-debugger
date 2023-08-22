@@ -59,6 +59,10 @@
         display: flex;
         flex-direction: row;
       }
+      .toolbarRow > .toolbarItem{
+        display: flex;
+        flex: 1;
+      }
       .toolbarRow > .toolbarItem > select,
       .toolbarRow > .toolbarItem > input{
         flex: 1;
@@ -201,7 +205,7 @@
           </div>
         </div>
         <div class="toolbarRow">
-          <div class="toolbarItem" style="flex: 1; display: flex;">
+          <div class="toolbarItem">
             <label for="inputMessageTypeDropdown" id="inputMessageTypeDropdownLabel">Message Type</label>
             <select
               type="search"
@@ -212,7 +216,7 @@
               <option value=""/>
             </select>
           </div>
-          <div class="toolbarItem" style="flex: 1; display: flex;">
+          <div class="toolbarItem">
             <label for="inputActorIdDropdown" id="inputActorIdDropdownLabel">Actor</label>
             <select
               type="search"
@@ -225,13 +229,35 @@
           </div>
         </div>
         <div class="toolbarRow">
-          <div class="toolbarItem" style="flex: 1; display: flex;">
+          <div class="toolbarItem">
+            <label for="inputActionIdDropdown" id="inputActionIdDropdownLabel">Action</label>
+            <select
+              type="search"
+              id="inputActionIdDropdown"
+              name="actionIdDropdown"
+              onchange="updateFilter('filterActionId', this.value)"
+            >
+              <option value=""/>
+            </select>
+          </div>
+          <div class="toolbarItem">
             <label for="inputTargetIdDropdown" id="inputTargetIdDropdownLabel">Target</label>
             <select
               type="search"
               id="inputTargetIdDropdown"
               name="targetIdDropdown"
               onchange="updateFilter('filterTargetId', this.value)"
+            >
+              <option value=""/>
+            </select>
+          </div>
+          <div class="toolbarItem">
+            <label for="inputEffectIdDropdown" id="inputEffectIdDropdownLabel">Effect</label>
+            <select
+              type="search"
+              id="inputEffectIdDropdown"
+              name="effectIdDropdown"
+              onchange="updateFilter('filterEffectId', this.value)"
             >
               <option value=""/>
             </select>
@@ -557,8 +583,8 @@
       const abilities = [];
       const actors = {};
       const targets = {};
-      const actions = [];
-      const effects = [];
+      const actions = {};
+      const effects = {};
 
       // Will hold all newly created elements that are added to the main area
       const elements = [];
@@ -567,7 +593,8 @@
         filterMessageType: null,
         filterActorId: null,
         filterTargetId: null,
-        filterAction: null,
+        filterActionId: null,
+        filterEffectId: null
       }
 
       let updateFilterTimeout = null;
@@ -622,9 +649,34 @@
         targets[targetId] = targetName ? targetName : '';
       }
 
+      function addAction(actionId, actionName){
+        if(!actions[actionId]){
+          const newOption = document.createElement('option');
+          newOption.value = actionId;
+          newOption.innerHTML = `${actionName} (${actionId})`;
+          document.getElementById('inputActionIdDropdown').appendChild(newOption);
+        }
+        // Sometimes actionName comes back null but actionId won't
+        actions[actionId] = actionName ? actionName : '';
+      }
+
+      function addEffect(effectId, effectName){
+        if(!actions[effectId]){
+          const newOption = document.createElement('option');
+          newOption.value = effectId;
+          newOption.innerHTML = `${effectName} (${effectId})`;
+          document.getElementById('inputEffectIdDropdown').appendChild(newOption);
+        }
+        // Sometimes effectName comes back null but effectId won't
+        actions[effectId] = effectName ? effectName : '';
+      }
+
       function shouldHideElement(element){
         let hideElement = false;
-        if(filters.filterFriendlyText && !(element.dataset.friendlyText || '').toLowerCase().includes(filters.filterFriendlyText.toLowerCase())){
+        if(
+          filters.filterFriendlyText
+          && !(element.dataset.friendlyText || '').toLowerCase().includes(filters.filterFriendlyText.toLowerCase())
+        ){
           hideElement = true;
         }
         if(filters.filterMessageType && element.dataset.messageType != filters.filterMessageType){
@@ -695,14 +747,13 @@
                 const startsCastingMessage = parseMessageStartsCasting(data);
                 addActor(startsCastingMessage.actorId, startsCastingMessage.actorName);
                 addTarget(startsCastingMessage.targetId, startsCastingMessage.targetName);
+                addAction(startsCastingMessage.actionId, startsCastingMessage.actionName);
                 logMessage(
                   startsCastingMessage,
                   startsCastingMessage.actorId,
                   startsCastingMessage.targetId
                 );
                 if(isRelatedToCurrentCharacter(startsCastingMessage.actorId) || isRelatedToCurrentCharacter(startsCastingMessage.targetId)){
-                  abilities.push(startsCastingMessage);
-
                   appendElementToMain(
                     createStartsCastingElement(
                       startsCastingMessage
@@ -715,14 +766,13 @@
                 const usedAbilityMessage = parseMessageUsedAbility(data);
                 addActor(usedAbilityMessage.actorId, usedAbilityMessage.actorName);
                 addTarget(usedAbilityMessage.targetId, usedAbilityMessage.targetName);
+                addAction(usedAbilityMessage.actionId, usedAbilityMessage.actionName);
                 logMessage(
                   usedAbilityMessage,
                   usedAbilityMessage.actorId,
                   usedAbilityMessage.targetId
                 );
                 if(isRelatedToCurrentCharacter(usedAbilityMessage.actorId) || isRelatedToCurrentCharacter(usedAbilityMessage.targetId)){
-                  abilities.push(usedAbilityMessage);
-
                   appendElementToMain(
                     createUsedAbilityElement(
                       usedAbilityMessage
@@ -735,14 +785,13 @@
                 const gainedEffectMessage = parseMessageGainEffect(data);
                 addActor(gainedEffectMessage.actorId, gainedEffectMessage.actorName);
                 addTarget(gainedEffectMessage.targetId, gainedEffectMessage.targetName);
+                addEffect(gainedEffectMessage.actionId, gainedEffectMessage.actionName);
                 logMessage(
                   gainedEffectMessage,
                   gainedEffectMessage.actorId,
                   gainedEffectMessage.targetId
                 );
                 if(isRelatedToCurrentCharacter(gainedEffectMessage.actorId) || isRelatedToCurrentCharacter(gainedEffectMessage.targetId)){
-                  effects.push(gainedEffectMessage);
-
                   appendElementToMain(
                     createGainedEffectElement(
                       gainedEffectMessage
@@ -755,14 +804,13 @@
                 const lostEffectMessage = parseMessageLostEffect(data);
                 addActor(lostEffectMessage.actorId, lostEffectMessage.actorName);
                 addTarget(lostEffectMessage.targetId, lostEffectMessage.targetName);
+                addEffect(lostEffectMessage.actionId, lostEffectMessage.actionName);
                 logMessage(
                   lostEffectMessage,
                   lostEffectMessage.actorId,
                   lostEffectMessage.targetId
                 );
                 if(isRelatedToCurrentCharacter(lostEffectMessage.actorId) || isRelatedToCurrentCharacter(lostEffectMessage.targetId)){
-                  effects.push(lostEffectMessage);
-
                   appendElementToMain(
                     createLostEffectElement(
                       lostEffectMessage
