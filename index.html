@@ -59,6 +59,11 @@
         display: flex;
         flex-direction: row;
       }
+      .toolbarRow > .toolbarItem > select,
+      .toolbarRow > .toolbarItem > input{
+        flex: 1;
+        margin-left: 8px;
+      }
       .toolbarRow > .toolbarItem:not(:last-child){
         padding-right: 8px;
         border-right: 1px solid #f2f2f2;
@@ -186,37 +191,47 @@
       <div id="toolbarFiltersWrapper">
         <div class="toolbarRow">
           <div class="toolbarItem" style="flex: 1; display: flex;">
-            <label for="inputFilterFriendlyText" id="inputFilterFriendlyTextLabel">Search: </label>
+            <label for="inputFilterFriendlyText" id="inputFilterFriendlyTextLabel">Search</label>
             <input
               type="search"
               id="inputFilterFriendlyText"
               name="filterFriendlyText"
-              style="flex: 1; margin-left: 8px;"
               onchange="updateFilter('filterFriendlyText', this.value, 200)"
               onkeyup="updateFilter('filterFriendlyText', this.value, 200)"/>
           </div>
         </div>
         <div class="toolbarRow">
           <div class="toolbarItem" style="flex: 1; display: flex;">
-            <label for="inputMessageTypeDropdown" id="inputMessageTypeDropdownLabel">Message Type: </label>
+            <label for="inputMessageTypeDropdown" id="inputMessageTypeDropdownLabel">Message Type</label>
             <select
               type="search"
               id="inputMessageTypeDropdown"
               name="messageTypeDropdown"
-              style="flex: 1; margin-left: 8px;"
               onchange="updateFilter('filterMessageType', this.value)"
             >
               <option value=""/>
             </select>
           </div>
           <div class="toolbarItem" style="flex: 1; display: flex;">
-            <label for="inputActorDropdown" id="inputActorDropdownLabel">Actor: </label>
+            <label for="inputActorIdDropdown" id="inputActorIdDropdownLabel">Actor</label>
             <select
               type="search"
-              id="inputActorDropdown"
-              name="actorDropdown"
-              style="flex: 1; margin-left: 8px;"
+              id="inputActorIdDropdown"
+              name="actorDropdownId"
               onchange="updateFilter('filterActorId', this.value)"
+            >
+              <option value=""/>
+            </select>
+          </div>
+        </div>
+        <div class="toolbarRow">
+          <div class="toolbarItem" style="flex: 1; display: flex;">
+            <label for="inputTargetIdDropdown" id="inputTargetIdDropdownLabel">Target</label>
+            <select
+              type="search"
+              id="inputTargetIdDropdown"
+              name="targetIdDropdown"
+              onchange="updateFilter('filterTargetId', this.value)"
             >
               <option value=""/>
             </select>
@@ -541,7 +556,7 @@
 
       const abilities = [];
       const actors = {};
-      const targets = [];
+      const targets = {};
       const actions = [];
       const effects = [];
 
@@ -551,7 +566,7 @@
         filterFriendlyText: null,
         filterMessageType: null,
         filterActorId: null,
-        filterTarget: null,
+        filterTargetId: null,
         filterAction: null,
       }
 
@@ -591,7 +606,17 @@
           const newOption = document.createElement('option');
           newOption.value = actorId;
           newOption.innerHTML = `${actorName} (${actorId})`;
-          document.getElementById('inputActorDropdown').appendChild(newOption);
+          document.getElementById('inputActorIdDropdown').appendChild(newOption);
+        }
+      }
+
+      function addTarget(targetId, targetName){
+        if(!targets[targetId]){
+          targets[targetId] = targetName;
+          const newOption = document.createElement('option');
+          newOption.value = targetId;
+          newOption.innerHTML = `${targetName} (${targetId})`;
+          document.getElementById('inputTargetIdDropdown').appendChild(newOption);
         }
       }
 
@@ -604,6 +629,9 @@
           hideElement = true;
         }
         if(filters.filterActorId && element.dataset.actorId != filters.filterActorId){
+          hideElement = true;
+        }
+        if(filters.filterTargetId && element.dataset.targetId != filters.filterTargetId){
           hideElement = true;
         }
         return hideElement;
@@ -664,6 +692,7 @@
               case MESSAGE_TYPE_STARTS_CASTING:
                 const startsCastingMessage = parseMessageStartsCasting(data);
                 addActor(startsCastingMessage.actorId, startsCastingMessage.actorName);
+                addTarget(startsCastingMessage.targetId, startsCastingMessage.targetName);
                 logMessage(
                   startsCastingMessage,
                   startsCastingMessage.actorId,
@@ -683,6 +712,7 @@
               case MESSAGE_TYPE_USE_ABILITY:
                 const usedAbilityMessage = parseMessageUsedAbility(data);
                 addActor(usedAbilityMessage.actorId, usedAbilityMessage.actorName);
+                addTarget(usedAbilityMessage.targetId, usedAbilityMessage.targetName);
                 logMessage(
                   usedAbilityMessage,
                   usedAbilityMessage.actorId,
@@ -702,6 +732,7 @@
               case MESSAGE_TYPE_GAIN_EFFECT:
                 const gainedEffectMessage = parseMessageGainEffect(data);
                 addActor(gainedEffectMessage.actorId, gainedEffectMessage.actorName);
+                addTarget(gainedEffectMessage.targetId, gainedEffectMessage.targetName);
                 logMessage(
                   gainedEffectMessage,
                   gainedEffectMessage.actorId,
@@ -721,6 +752,7 @@
               case MESSAGE_TYPE_LOSE_EFFECT:
                 const lostEffectMessage = parseMessageLostEffect(data);
                 addActor(lostEffectMessage.actorId, lostEffectMessage.actorName);
+                addTarget(lostEffectMessage.targetId, lostEffectMessage.targetName);
                 logMessage(
                   lostEffectMessage,
                   lostEffectMessage.actorId,
