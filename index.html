@@ -602,22 +602,24 @@
 
       function addActor(actorId, actorName){
         if(!actors[actorId]){
-          actors[actorId] = actorName;
           const newOption = document.createElement('option');
           newOption.value = actorId;
           newOption.innerHTML = `${actorName} (${actorId})`;
           document.getElementById('inputActorIdDropdown').appendChild(newOption);
         }
+        // Sometimes actorName comes back null but actorId won't
+        actors[actorId] = actorName ? actorName : '';
       }
 
       function addTarget(targetId, targetName){
         if(!targets[targetId]){
-          targets[targetId] = targetName;
           const newOption = document.createElement('option');
           newOption.value = targetId;
           newOption.innerHTML = `${targetName} (${targetId})`;
           document.getElementById('inputTargetIdDropdown').appendChild(newOption);
         }
+        // Sometimes targetName comes back null but targetId won't
+        targets[targetId] = targetName ? targetName : '';
       }
 
       function shouldHideElement(element){
