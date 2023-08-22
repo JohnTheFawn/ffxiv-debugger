@@ -765,15 +765,15 @@
             switch(messageType){
               case MESSAGE_TYPE_STARTS_CASTING:
                 const startsCastingMessage = parseMessageStartsCasting(data);
-                addActor(startsCastingMessage.actorId, startsCastingMessage.actorName);
-                addTarget(startsCastingMessage.targetId, startsCastingMessage.targetName);
-                addAction(startsCastingMessage.actionId, startsCastingMessage.actionName);
                 logMessage(
                   startsCastingMessage,
                   startsCastingMessage.actorId,
                   startsCastingMessage.targetId
                 );
                 if(isRelatedToCurrentCharacter(startsCastingMessage.actorId) || isRelatedToCurrentCharacter(startsCastingMessage.targetId)){
+                  addActor(startsCastingMessage.actorId, startsCastingMessage.actorName);
+                  addTarget(startsCastingMessage.targetId, startsCastingMessage.targetName);
+                  addAction(startsCastingMessage.actionId, startsCastingMessage.actionName);
                   appendElementToMain(
                     createStartsCastingElement(
                       startsCastingMessage
@@ -784,15 +784,15 @@
                 break;
               case MESSAGE_TYPE_USE_ABILITY:
                 const usedAbilityMessage = parseMessageUsedAbility(data);
-                addActor(usedAbilityMessage.actorId, usedAbilityMessage.actorName);
-                addTarget(usedAbilityMessage.targetId, usedAbilityMessage.targetName);
-                addAction(usedAbilityMessage.actionId, usedAbilityMessage.actionName);
                 logMessage(
                   usedAbilityMessage,
                   usedAbilityMessage.actorId,
                   usedAbilityMessage.targetId
                 );
                 if(isRelatedToCurrentCharacter(usedAbilityMessage.actorId) || isRelatedToCurrentCharacter(usedAbilityMessage.targetId)){
+                  addActor(usedAbilityMessage.actorId, usedAbilityMessage.actorName);
+                  addTarget(usedAbilityMessage.targetId, usedAbilityMessage.targetName);
+                  addAction(usedAbilityMessage.actionId, usedAbilityMessage.actionName);
                   appendElementToMain(
                     createUsedAbilityElement(
                       usedAbilityMessage
@@ -803,15 +803,15 @@
                 break;
               case MESSAGE_TYPE_GAIN_EFFECT:
                 const gainedEffectMessage = parseMessageGainEffect(data);
-                addActor(gainedEffectMessage.actorId, gainedEffectMessage.actorName);
-                addTarget(gainedEffectMessage.targetId, gainedEffectMessage.targetName);
-                addEffect(gainedEffectMessage.actionId, gainedEffectMessage.actionName);
                 logMessage(
                   gainedEffectMessage,
                   gainedEffectMessage.actorId,
                   gainedEffectMessage.targetId
                 );
                 if(isRelatedToCurrentCharacter(gainedEffectMessage.actorId) || isRelatedToCurrentCharacter(gainedEffectMessage.targetId)){
+                  addActor(gainedEffectMessage.actorId, gainedEffectMessage.actorName);
+                  addTarget(gainedEffectMessage.targetId, gainedEffectMessage.targetName);
+                  addEffect(gainedEffectMessage.actionId, gainedEffectMessage.actionName);
                   appendElementToMain(
                     createGainedEffectElement(
                       gainedEffectMessage
@@ -822,15 +822,15 @@
                 break;
               case MESSAGE_TYPE_LOSE_EFFECT:
                 const lostEffectMessage = parseMessageLostEffect(data);
-                addActor(lostEffectMessage.actorId, lostEffectMessage.actorName);
-                addTarget(lostEffectMessage.targetId, lostEffectMessage.targetName);
-                addEffect(lostEffectMessage.actionId, lostEffectMessage.actionName);
                 logMessage(
                   lostEffectMessage,
                   lostEffectMessage.actorId,
                   lostEffectMessage.targetId
                 );
                 if(isRelatedToCurrentCharacter(lostEffectMessage.actorId) || isRelatedToCurrentCharacter(lostEffectMessage.targetId)){
+                  addActor(lostEffectMessage.actorId, lostEffectMessage.actorName);
+                  addTarget(lostEffectMessage.targetId, lostEffectMessage.targetName);
+                  addEffect(lostEffectMessage.actionId, lostEffectMessage.actionName);
                   appendElementToMain(
                     createLostEffectElement(
                       lostEffectMessage
