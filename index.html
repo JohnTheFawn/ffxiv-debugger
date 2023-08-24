@@ -318,21 +318,21 @@
       //        ex: Rampart or Sentinel or Arm's Length wears off
 
 
-      //    ex: "03|2023-08-24T12:40:49.0230000-04:00|40061B8B|Chonkchonk|00|5A|1002E6E1|00||0|952|38060|38060|7000|10000|||372.89|-188.15|20.31|-0.94|bb59d46c05a3a77e"
+      //    ex: "03|2023-08-24T13:58:39.5300000-04:00|1002E6E1|Tonk Tonkers|13|5A|0000|4A|Coeurl|0|0|116557|117930|10000|10000|||378.21|-204.52|20.34|-2.09|a7c819371491e446"
       //        [0]  messageType: 03
       //        [1]  timestamp: 2023-08-24T12:40:49.0230000-04:00
-      //        [2]  actorId: 40061B8B
-      //        [3]  actorName: Chonkchonk
-      //        [4]  ??: 00
-      //        [5]  ??: 5A
-      //        [6]  ??: 1002E6E1
-      //        [7]  ??: 00
-      //        [8]  ??:
+      //        [2]  actorId: 1002E6E1
+      //        [3]  actorName: Tonk Tonkers
+      //        [4]  jobId: 13
+      //        [5]  level: 5A
+      //        [6]  ??: 0000
+      //        [7]  ??: 4A
+      //        [8]  ??: Coeurl
       //        [9]  ??: 0
-      //        [10] ??: 952
-      //        [11] currentHp: 38060
-      //        [12] totalHp: 38060
-      //        [13] currentMp: 7000
+      //        [10] ??: 0
+      //        [11] currentHp: 116557
+      //        [12] totalHp: 117930
+      //        [13] currentMp: 10000
       //        [14] totalMP: 10000
       /**
        * Parse a "Combatant Added" log line
@@ -348,25 +348,28 @@
           timestamp: new Date(message.line[1]),
           actorId: parseInt(message.line[2], 16),
           actorName: message.line[3],
+          jobId: parseInt(message.line[4], 16),
+          level: parseInt(message.line[5], 16),
           currentHp: message.line[11],
           totalHp: message.line[12],
           currentMp: message.line[13],
-          totalMp: message.line[14]
+          totalMp: message.line[14],
+
         };
       }
 
-      //    ex: "03|2023-08-24T12:40:49.0230000-04:00|40061B8B|Chonkchonk|00|5A|1002E6E1|00||0|952|38060|38060|7000|10000|||372.89|-188.15|20.31|-0.94|bb59d46c05a3a77e"
+      //    ex: "04|2023-08-24T13:59:03.9090000-04:00|1002E6E1|Tonk Tonkers|22|57|0000|4A|Coeurl|0|0|31486|31486|10000|10000|||-108.19|289.00|-19.23|0.82|57cc6bfedad6ab98"
       //        [0]  messageType: 03
       //        [1]  timestamp: 2023-08-24T12:40:49.0230000-04:00
-      //        [2]  actorId: 40061B8B
-      //        [3]  actorName: Chonkchonk
-      //        [4]  ??: 00
-      //        [5]  ??: 5A
-      //        [6]  ??: 1002E6E1
-      //        [7]  ??: 00
-      //        [8]  ??:
+      //        [2]  actorId: 1002E6E1
+      //        [3]  actorName: Tonk Tonkers
+      //        [4]  jobId: 22
+      //        [5]  level: 57
+      //        [6]  ??: 0000
+      //        [7]  ??: 4A
+      //        [8]  ??: Coeurl
       //        [9]  ??: 0
-      //        [10] ??: 952
+      //        [10] ??: 0
       //        [11] currentHp: 38060
       //        [12] totalHp: 38060
       //        [13] currentMp: 7000
@@ -385,6 +388,8 @@
           timestamp: new Date(message.line[1]),
           actorId: parseInt(message.line[2], 16),
           actorName: message.line[3],
+          jobId: parseInt(message.line[4], 16),
+          level: parseInt(message.line[5], 16),
           currentHp: message.line[11],
           totalHp: message.line[12],
           currentMp: message.line[13],
@@ -1157,6 +1162,14 @@
         ]);
         detailsTable.appendChild(thirdRow);
 
+        const fourthRow = createTableRowFromArray([
+          'Job ID',
+          removeCombatantMessage.jobId,
+          'Level',
+          removeCombatantMessage.level
+        ]);
+        detailsTable.appendChild(fourthRow);
+
         // Fifth Row ///////////////////////////////////////////////////////////
         const fifthRow = document.createElement('tr');
         detailsTable.appendChild(fifthRow);
@@ -1263,6 +1276,14 @@
           addCombatantMessage.totalMp
         ]);
         detailsTable.appendChild(thirdRow);
+
+        const fourthRow = createTableRowFromArray([
+          'Job ID',
+          addCombatantMessage.jobId,
+          'Level',
+          addCombatantMessage.level
+        ]);
+        detailsTable.appendChild(fourthRow);
 
         // Fifth Row ///////////////////////////////////////////////////////////
         const fifthRow = document.createElement('tr');
