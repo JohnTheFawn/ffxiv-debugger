@@ -572,6 +572,36 @@
         };
       }
 
+      //    ex: "39|2023-08-24T13:38:25.4760000-04:00|1002E6E1|Tonk Tonkers|117930|117930|9800|10000|||380.96|-181.85|20.42|1.65|9891b2cace489cea"
+      //        [0]  messageType: 39
+      //        [1]  timestamp: 2023-08-24T13:38:25.4760000-04:00
+      //        [2]  actorId: 1002E6E1
+      //        [3]  actorName: Tonk Tonkers
+      //        [4]  currentHp: 117930
+      //        [5]  totalHp: 117930
+      //        [6]  currentMp: 9800
+      //        [7]  totalMp: 10000
+      /**
+       * Parse a "Health update" log line
+       *
+       * @param {object} message The raw "Health update" message object
+       *
+       * @return {object} A parsed and labeled object containing the data.
+       */
+      function parseMessageHealthUpdate(message){
+        return {
+          raw: message,
+          messageType: message.line[0],
+          timestamp: new Date(message.line[1]),
+          actorId: parseInt(message.line[2], 16),
+          actorName: message.line[3],
+          currentHp: message.line[4],
+          totalHp: message.line[5],
+          currentMp: message.line[6],
+          totalMp: message.line[7]
+        };
+      }
+
       /**
        * Sometimes the values are stored as hex and shifted some number of bits
        * This function will shift the bits and then convert the hex
@@ -607,7 +637,7 @@
       const MESSAGE_TYPE_LOSE_EFFECT = '30'; // Character loses effect
       const MESSAGE_TYPE_UNKNOWN_37 = '37'; // ??? TODO investigate
       const MESSAGE_TYPE_UNKNOWN_38 = '38'; // ??? TODO investigate
-      const MESSAGE_TYPE_SERVER_TICK = '39'; // Server ticks? TODO investigate
+      const MESSAGE_TYPE_HEALTH_UPDATE = '39'; // Regen tick
       const MESSAGE_TYPE_CHANGED_ZONE = '40'; // Changed Zone? TODO investigate
 
       // All Message Types
@@ -626,7 +656,7 @@
         MESSAGE_TYPE_LOSE_EFFECT,
         MESSAGE_TYPE_UNKNOWN_37, // ??? TODO investigate
         MESSAGE_TYPE_UNKNOWN_38, // ??? TODO investigate
-        MESSAGE_TYPE_SERVER_TICK,
+        MESSAGE_TYPE_HEALTH_UPDATE,
         MESSAGE_TYPE_CHANGED_ZONE
       ];
 
@@ -647,7 +677,7 @@
         [MESSAGE_TYPE_UNKNOWN_37]: 'MESSAGE_TYPE_UNKNOWN_37',
         [MESSAGE_TYPE_UNKNOWN_38]: 'MESSAGE_TYPE_UNKNOWN_38',
         [MESSAGE_TYPE_UNKNOWN_38]: 'MESSAGE_TYPE_UNKNOWN_38',
-        [MESSAGE_TYPE_SERVER_TICK]: 'Server tick?',
+        [MESSAGE_TYPE_HEALTH_UPDATE]: 'Health Update',
         [MESSAGE_TYPE_CHANGED_ZONE]: 'Changed zone?'
       };
 
@@ -656,8 +686,7 @@
       const messageTypeBlackList = [
         MESSAGE_TYPE_LOG_LINE,
         MESSAGE_TYPE_UNKNOWN_37,
-        MESSAGE_TYPE_UNKNOWN_38,
-        MESSAGE_TYPE_SERVER_TICK
+        MESSAGE_TYPE_UNKNOWN_38
       ];
 
       // Populate the Message Type Dropdown filter with messageTypes
@@ -833,7 +862,7 @@
         const messageType = data.line[0];
         if(!options.paused){
           if(messageTypes.includes(messageType)){
-            if(options.logToConsole && options.logRawData && !messageTypeBlackList.includes(messageType)){
+            if(options.logToConsole && options.logRawData){
               console.log(
                 messageTypeToFriendlyMap[messageType] ? messageTypeToFriendlyMap[messageType] : 'Unknown message type',
                 data
@@ -943,6 +972,22 @@
                   appendElementToMain(
                     createLostEffectElement(
                       lostEffectMessage
+                    )
+                  );
+                }
+
+                break;
+              case MESSAGE_TYPE_HEALTH_UPDATE:
+                const healthUpdateMessage = parseMessageHealthUpdate(data);
+                logMessage(
+                  healthUpdateMessage,
+                  healthUpdateMessage.actorId
+                );
+                if(isRelatedToCurrentCharacter(healthUpdateMessage.actorId)){
+                  addActor(healthUpdateMessage.actorId, healthUpdateMessage.actorName);
+                  appendElementToMain(
+                    createHealthUpdateElement(
+                      healthUpdateMessage
                     )
                   );
                 }
@@ -1127,10 +1172,10 @@
       }
 
       /**
-       * Create a "Starts Casting" element to display the "Starts Casting" log
+       * Create a "Combatant Removed" element to display the "Combatant Removed" log
        * lines
        *
-       * @param {object} rawData The raw, unparsed, gained effect object
+       * @param {object} message The parsed combatant removed object
        *
        * @return {HTMLObject} The newly created element
        */
@@ -1234,10 +1279,10 @@
       }
 
       /**
-       * Create a "Starts Casting" element to display the "Starts Casting" log
+       * Create a "Combatant Added" element to display the "Combatant Added" log
        * lines
        *
-       * @param {object} rawData The raw, unparsed, gained effect object
+       * @param {object} message The parsed combatant added object
        *
        * @return {HTMLObject} The newly created element
        */
@@ -1352,7 +1397,7 @@
        * Create a "Starts Casting" element to display the "Starts Casting" log
        * lines
        *
-       * @param {object} rawData The raw, unparsed, gained effect object
+       * @param {object} message The parsed gained effect object
        *
        * @return {HTMLObject} The newly created element
        */
@@ -1468,7 +1513,7 @@
        * Create a "Used an Ability" element to display the "Used an Ability" log
        * lines
        *
-       * @param {object} rawData The raw, unparsed, gained effect object
+       * @param {object} rawData The parsed used an ability object
        *
        * @return {HTMLObject} The newly created element
        */
@@ -1585,7 +1630,7 @@
        * Create a "Gained Effect" element to display the "Gained an Effect" log
        * lines
        *
-       * @param {object} rawData The raw, unparsed, gained effect object
+       * @param {object} message The parsed gained effect object
        *
        * @return {HTMLObject} The newly created element
        */
@@ -1706,7 +1751,7 @@
        * Create a "Lost an Effect" element to display the "Lost an Effect" log
        * lines
        *
-       * @param {object} rawData The raw, unparsed, lost an effect object
+       * @param {object} message The parsed lost an effect object
        *
        * @return {HTMLObject} The newly created element
        */
@@ -1758,6 +1803,114 @@
         });
 
         return lostEffectElement;
+      }
+
+      /**
+       * Given a gainedEffectMessage, create an HTML table with it's data
+       *
+       * @param {object} healthUpdateMessage The parsed health Update message
+       *
+       * @return {HTMLObject} The newly created table element
+       */
+      function createRegenTickTable(healthUpdateMessage){
+        const detailsTable = document.createElement('table');
+        detailsTable.classList.add('itemDetailsTable');
+
+        const firstRow = createTableRowFromArray([
+          'Actor',
+          healthUpdateMessage.actorName,
+          'Actor ID',
+          healthUpdateMessage.actorId
+        ]);
+        detailsTable.appendChild(firstRow);
+
+        const secondRow = createTableRowFromArray([
+          'Current HP',
+          healthUpdateMessage.currentHp,
+          'Total HP',
+          healthUpdateMessage.totalHp
+        ]);
+        detailsTable.appendChild(secondRow);
+
+        const thirdRow = createTableRowFromArray([
+          'Current MP',
+          healthUpdateMessage.currentMp,
+          'Total MP',
+          healthUpdateMessage.totalMp
+        ]);
+        detailsTable.appendChild(thirdRow);
+
+        // Fifth Row ///////////////////////////////////////////////////////////
+        const fifthRow = document.createElement('tr');
+        detailsTable.appendChild(fifthRow);
+
+        // Timestamp
+        const timestampColumnElement = document.createElement('td');
+        timestampColumnElement.colSpan = 4;
+        fifthRow.appendChild(timestampColumnElement);
+        const timestampElement = document.createTextNode(healthUpdateMessage.timestamp);
+        timestampColumnElement.appendChild(timestampElement);
+
+        return detailsTable;
+      }
+
+      /**
+       * Create a "Health update" element to display the "Health update" log lines
+       *
+       * @param {object} message The parsed health Update message
+       *
+       * @return {HTMLObject} The newly created element
+       */
+      function createHealthUpdateElement(message){
+        // Container for the Gained Effect messages
+        const healthUpdateElement = document.createElement('details');
+        healthUpdateElement.classList.add('card');
+        healthUpdateElement.classList.add('itemContainer');
+
+        // Container for the friendly view elements
+        const friendlyViewElement = document.createElement('summary');
+        friendlyViewElement.classList.add('itemFriendlyView');
+        healthUpdateElement.appendChild(friendlyViewElement);
+
+        // Timestamp
+        const friendlyTimestampElement = document.createElement('span');
+        const timestamp = new Date(message.timestamp);
+        friendlyTimestampElement.innerHTML = convertDateToFriendlyWithMilliseconds(timestamp);
+        friendlyViewElement.appendChild(friendlyTimestampElement);
+
+        // Actor applying the effect to the target
+        const friendlyActorElement = document.createElement('span');
+        let friendlyText = `<b>${message.actorName}</b>`;
+        friendlyText += ` HP (${message.currentHp}/${message.totalHp})`;
+        friendlyText += ` MP (${message.currentMp}/${message.totalMp})</b>`;
+        friendlyActorElement.innerHTML = friendlyText;
+        friendlyViewElement.appendChild(friendlyActorElement);
+
+        // Container for the detailed view
+        const detailedView = document.createElement('div');
+        healthUpdateElement.appendChild(detailedView);
+
+        // Table to hold the message information
+        const lostEffectTable = createRegenTickTable(message)
+        detailedView.appendChild(lostEffectTable);
+
+        // Parsed message view
+        const parsedView = createCodeBlock(
+          (({raw, ...others }) => others)(message)
+        );
+        healthUpdateElement.appendChild(parsedView);
+
+        // Raw message view
+        const rawView = createCodeBlock(message.raw);
+        healthUpdateElement.appendChild(rawView);
+
+        // Used for searching
+        healthUpdateElement.dataset.friendlyText = friendlyViewElement.innerText;
+        Object.entries(message).forEach(([key, value]) => {
+          healthUpdateElement.dataset[key] = value;
+        });
+
+        return healthUpdateElement;
       }
 
       /*
