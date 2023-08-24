@@ -318,15 +318,90 @@
       //        ex: Rampart or Sentinel or Arm's Length wears off
 
 
+      //    ex: "03|2023-08-24T12:40:49.0230000-04:00|40061B8B|Chonkchonk|00|5A|1002E6E1|00||0|952|38060|38060|7000|10000|||372.89|-188.15|20.31|-0.94|bb59d46c05a3a77e"
+      //        [0]  messageType: 03
+      //        [1]  timestamp: 2023-08-24T12:40:49.0230000-04:00
+      //        [2]  actorId: 40061B8B
+      //        [3]  actorName: Chonkchonk
+      //        [4]  ??: 00
+      //        [5]  ??: 5A
+      //        [6]  ??: 1002E6E1
+      //        [7]  ??: 00
+      //        [8]  ??:
+      //        [9]  ??: 0
+      //        [10] ??: 952
+      //        [11] currentHp: 38060
+      //        [12] totalHp: 38060
+      //        [13] currentMp: 7000
+      //        [14] totalMP: 10000
+      /**
+       * Parse a "Combatant Added" log line
+       *
+       * @param {object} message The raw "Combatant Added" message object
+       *
+       * @return {object} A parsed and labeled object containing the data.
+       */
+      function parseMessageAddCombatant(message){
+        return {
+          raw: message,
+          messageType: message.line[0],
+          timestamp: new Date(message.line[1]),
+          actorId: parseInt(message.line[2], 16),
+          actorName: message.line[3],
+          currentHp: message.line[11],
+          totalHp: message.line[12],
+          currentMp: message.line[13],
+          totalMp: message.line[14]
+        };
+      }
+
+      //    ex: "03|2023-08-24T12:40:49.0230000-04:00|40061B8B|Chonkchonk|00|5A|1002E6E1|00||0|952|38060|38060|7000|10000|||372.89|-188.15|20.31|-0.94|bb59d46c05a3a77e"
+      //        [0]  messageType: 03
+      //        [1]  timestamp: 2023-08-24T12:40:49.0230000-04:00
+      //        [2]  actorId: 40061B8B
+      //        [3]  actorName: Chonkchonk
+      //        [4]  ??: 00
+      //        [5]  ??: 5A
+      //        [6]  ??: 1002E6E1
+      //        [7]  ??: 00
+      //        [8]  ??:
+      //        [9]  ??: 0
+      //        [10] ??: 952
+      //        [11] currentHp: 38060
+      //        [12] totalHp: 38060
+      //        [13] currentMp: 7000
+      //        [14] totalMP: 10000
+      /**
+       * Parse a "Combatant Added" log line
+       *
+       * @param {object} message The raw "Combatant Added" message object
+       *
+       * @return {object} A parsed and labeled object containing the data.
+       */
+      function parseMessageRemoveCombatant(message){
+        return {
+          raw: message,
+          messageType: message.line[0],
+          timestamp: new Date(message.line[1]),
+          actorId: parseInt(message.line[2], 16),
+          actorName: message.line[3],
+          currentHp: message.line[11],
+          totalHp: message.line[12],
+          currentMp: message.line[13],
+          totalMp: message.line[14]
+        };
+      }
+
       //    ex: "20|2023-08-21T15:04:24.6500000-04:00|107CDF82|Tonk Tonkers|05|Teleport|107CDF82|Tonk Tonkers|5.000|-119.53|-130.91|2.00|2.57|36b21e47de5a2d13"
-      //        messageType: 20
-      //        timestamp: 2023-08-21T15:04:24.6500000-04:00
-      //        actorId: 107CDF82
-      //        actorName: Tonk Tonkers
-      //        action id: 05
-      //        action: Teleport
-      //        targetId: 107CDF82
-      //        targetName: Tonk Tonkers
+      //        [0] messageType: 20
+      //        [1] timestamp: 2023-08-21T15:04:24.6500000-04:00
+      //        [2] actorId: 107CDF82
+      //        [3] actorName: Tonk Tonkers
+      //        [4] actionId: 05
+      //        [5] actionName: Teleport
+      //        [6] targetId: 107CDF82
+      //        [7] targetName: Tonk Tonkers
+      //        [8] castTime: 5.000
       /**
        * Parse a "Starts Casting" log line
        *
@@ -351,19 +426,16 @@
 
 
       //    ex: "21|2023-01-16T13:37:49.1410000-05:00|107CDF82|Tonk Tonkers|16|Bulwark|107CDF82|Tonk Tonkers|640F|4D8000|0|0|0|0|0|0|0|0|0|0|0|0|0|0|98900|98900|10000|10000|||-87.90|51.12|1.50|-1.54|98900|98900|10000|10000|||-87.90|51.12|1.50|-1.54|0000130D|0|1|81681bf499192d9b"
-      //        [0] messageType: 21
-      //        [1] timestamp: 2023-08-08T17:49:10.1180000-04:00
-      //        [2] actorId: 10911F96
-      //        [3] actorName: Tonk Tonkers
-      //        [4] action id: DE0
-      //        [5] action: Equilibrium
-      //        [6] targetId: 10911F96
-      //        [7] targetName: Tonk Tonkers
-      //        [8] this is some kind of flag ???: 4
-      //                 4 - ???
-      //            200004 - crit?
-      //        [9] amount (hex, trailing 0s?): 6D510000
-      //        [10] amount (hex, trailing 0s?): 6D510000
+      //        [0]  messageType: 21
+      //        [1]  timestamp: 2023-08-08T17:49:10.1180000-04:00
+      //        [2]  actorId: 107CDF82
+      //        [3]  actorName: Tonk Tonkers
+      //        [4]  actionId/effectId: 16
+      //        [5]  actionName/effectName: Bulwark
+      //        [6]  targetId: 107CDF82
+      //        [7]  targetName: Tonk Tonkers
+      //        [8]  ???: 640F
+      //        [9]  amount (hex and shifted): 4D8000
       /**
        * Parse a "Gained an Effect" log line
        *
@@ -411,15 +483,18 @@
       }
 
       //    ex: "26|2023-01-16T13:37:49.1410000-05:00|4D|Bulwark|10.00|107CDF82|Tonk Tonkers|107CDF82|Tonk Tonkers|00|98900|98900|b7ca294ce31f8663"
-      //        messageType: 26
-      //        timestamp: 2023-01-16T13:37:49.1410000-05:00
-      //        actionId: 4D
-      //        actionName: Bulwark
-      //        duration (seconds, 2 decimal places): 10.00
-      //        actor?Id: 107CDF82
-      //        actor?Name: Tonk Tonkers
-      //        targetId: 107CDF82
-      //        targetName: Tonk Tonkers
+      //        [0]  messageType: 26
+      //        [1]  timestamp: 2023-01-16T13:37:49.1410000-05:00
+      //        [2]  actionId: 4D
+      //        [3]  actionName: Bulwark
+      //        [4]  duration (seconds, 2 decimal places): 10.00
+      //        [5]  actorId: 107CDF82
+      //        [6]  actorName: Tonk Tonkers
+      //        [7]  targetId: 107CDF82
+      //        [8]  targetName: Tonk Tonkers
+      //        [9]  ???: 00
+      //        [10] actor?target?Hp: 98900
+      //        [11] actor?target?Hp: 98900
       /**
        * Parse a "Gained an Effect" log line
        *
@@ -438,9 +513,7 @@
           actorId: parseInt(message.line[5], 16),
           actorName: message.line[6],
           targetId: parseInt(message.line[7], 16),
-          targetName: message.line[8],
-          //???: message.line[9],
-          amount: unshiftHexAndConvert(message.line[10], 3)
+          targetName: message.line[8]
         };
       }
 
@@ -466,15 +539,17 @@
       }
 
       //    ex: "30|2023-01-16T13:37:53.8630000-05:00|4D|Bulwark|0.00|107CDF82|Tonk Tonkers|107CDF82|Tonk Tonkers|00|98900|98900|ebfc01ff60fa6c8f"
-      //        messageType: 30
-      //        timestamp: 2023-01-16T13:37:53.8630000-05:00
-      //        actionId: 4D
-      //        actionName: Bulwark
-      //        duration (seconds, 2 decimal places): 0.00
-      //        actor?Id: 107CDF82
-      //        actor?Name: Tonk Tonkers
-      //        target?Id: 107CDF82
-      //        target?Name: Tonk Tonkers
+      //        [0] messageType: 30
+      //        [1] timestamp: 2023-01-16T13:37:53.8630000-05:00
+      //        [2] actionId: 4D
+      //        [3] actionName: Bulwark
+      //        [4] duration (seconds, 2 decimal places): 0.00
+      //        [5] actorId: 107CDF82
+      //        [6] actorName: Tonk Tonkers
+      //        [7] targetId: 107CDF82
+      //        [8] targetName: Tonk Tonkers
+      //        [10] actor?target?Hp: 98900
+      //        [11] actor?target?Hp: 98900
       /**
        * Parse a "Lost an Effect" log line
        *
@@ -559,8 +634,8 @@
       const messageTypeToFriendlyMap = {
         [MESSAGE_TYPE_LOG_LINE]: 'Log Line',
         [MESSAGE_TYPE_CHANGE_PRIMARY_PLAYER]: 'Primary Player Changed',
-        [MESSAGE_TYPE_ADD_COMBATANT]: 'MESSAGE_TYPE_ADD_COMBATANT',
-        [MESSAGE_TYPE_REMOVE_COMBATANT]: 'MESSAGE_TYPE_REMOVE_COMBATANT',
+        [MESSAGE_TYPE_ADD_COMBATANT]: 'Combatant Added',
+        [MESSAGE_TYPE_REMOVE_COMBATANT]: 'Combatant Removed',
         [MESSAGE_TYPE_ADD_BUFF]: 'MESSAGE_TYPE_ADD_BUFF',
         [MESSAGE_TYPE_REMOVE_BUFF]: 'MESSAGE_TYPE_REMOVE_BUFF',
         [MESSAGE_TYPE_FLYING_TEXT]: 'MESSAGE_TYPE_FLYING_TEXT',
@@ -580,8 +655,6 @@
       // displayed
       const messageTypeBlackList = [
         MESSAGE_TYPE_LOG_LINE,
-        MESSAGE_TYPE_ADD_COMBATANT,
-        MESSAGE_TYPE_REMOVE_COMBATANT,
         MESSAGE_TYPE_UNKNOWN_37,
         MESSAGE_TYPE_UNKNOWN_38,
         MESSAGE_TYPE_SERVER_TICK
@@ -767,6 +840,38 @@
               );
             }
             switch(messageType){
+              case MESSAGE_TYPE_ADD_COMBATANT:
+                const addCombatantMessage = parseMessageAddCombatant(data);
+                logMessage(
+                  addCombatantMessage,
+                  addCombatantMessage.actorId
+                );
+                if(isRelatedToCurrentCharacter(addCombatantMessage.actorId)){
+                  addActor(addCombatantMessage.actorId, addCombatantMessage.actorName);
+                  appendElementToMain(
+                    createAddCombatantElement(
+                      addCombatantMessage
+                    )
+                  );
+                }
+
+                break;
+              case MESSAGE_TYPE_REMOVE_COMBATANT:
+                const removeCombatantMessage = parseMessageRemoveCombatant(data);
+                logMessage(
+                  removeCombatantMessage,
+                  removeCombatantMessage.actorId
+                );
+                if(isRelatedToCurrentCharacter(removeCombatantMessage.actorId)){
+                  addActor(removeCombatantMessage.actorId, removeCombatantMessage.actorName);
+                  appendElementToMain(
+                    createRemoveCombatantElement(
+                      removeCombatantMessage
+                    )
+                  );
+                }
+
+                break;
               case MESSAGE_TYPE_STARTS_CASTING:
                 const startsCastingMessage = parseMessageStartsCasting(data);
                 logMessage(
@@ -973,9 +1078,223 @@
       }
 
       /**
+       * Given a removeCombatantMessage, create an HTML table with it's data
+       *
+       * @param {object} removeCombatantMessage The parsed combatant removed message.
+       *
+       * @return {HTMLObject} The newly created table element
+       */
+      function createRemoveCombatantTable(removeCombatantMessage){
+        const detailsTable = document.createElement('table');
+        detailsTable.classList.add('itemDetailsTable');
+
+        const firstRow = createTableRowFromArray([
+          'Actor',
+          removeCombatantMessage.actorName,
+          'Actor ID',
+          removeCombatantMessage.actorId
+        ]);
+        detailsTable.appendChild(firstRow);
+
+        const secondRow = createTableRowFromArray([
+          'Current HP',
+          removeCombatantMessage.currentHp,
+          'Total HP',
+          removeCombatantMessage.totalHp
+        ]);
+        detailsTable.appendChild(secondRow);
+
+        const thirdRow = createTableRowFromArray([
+          'Current MP',
+          removeCombatantMessage.currentMp,
+          'Total MP',
+          removeCombatantMessage.totalMp
+        ]);
+        detailsTable.appendChild(thirdRow);
+
+        // Fifth Row ///////////////////////////////////////////////////////////
+        const fifthRow = document.createElement('tr');
+        detailsTable.appendChild(fifthRow);
+
+        // Timestamp
+        const timestampColumnElement = document.createElement('td');
+        timestampColumnElement.colSpan = 4;
+        fifthRow.appendChild(timestampColumnElement);
+        const timestampElement = document.createTextNode(removeCombatantMessage.timestamp);
+        timestampColumnElement.appendChild(timestampElement);
+
+        return detailsTable;
+      }
+
+      /**
+       * Create a "Starts Casting" element to display the "Starts Casting" log
+       * lines
+       *
+       * @param {object} rawData The raw, unparsed, gained effect object
+       *
+       * @return {HTMLObject} The newly created element
+       */
+      function createRemoveCombatantElement(message){
+        // Container for the starts casting messages
+        const removeCombatantElement = document.createElement('details');
+        removeCombatantElement.classList.add('card');
+        removeCombatantElement.classList.add('itemContainer');
+
+        // Container for the friendly view elements
+        const friendlyViewElement = document.createElement('summary');
+        friendlyViewElement.classList.add('itemFriendlyView');
+        removeCombatantElement.appendChild(friendlyViewElement);
+
+        // Timestamp
+        const friendlyTimestampElement = document.createElement('span');
+        const timestamp = new Date(message.timestamp);
+        friendlyTimestampElement.innerHTML = convertDateToFriendlyWithMilliseconds(timestamp);
+        friendlyViewElement.appendChild(friendlyTimestampElement);
+
+        // Actor starts casting an action on a Target
+        const friendlyActorElement = document.createElement('span');
+        let friendlyText = `Removed Combatant: <b>${message.actorName}</b>`;
+        friendlyActorElement.innerHTML = friendlyText;
+        friendlyViewElement.appendChild(friendlyActorElement);
+
+        // Container for the detailed view
+        const detailedView = document.createElement('div');
+        removeCombatantElement.appendChild(detailedView);
+
+        // Table to hold the message information
+        const gainedEffectTable = createRemoveCombatantTable(message)
+        detailedView.appendChild(gainedEffectTable);
+
+        // Parsed message view
+        const parsedView = createCodeBlock(
+          (({raw, ...others }) => others)(message)
+        );
+        removeCombatantElement.appendChild(parsedView);
+
+        // Raw message view
+        const rawView = createCodeBlock(message.raw);
+        removeCombatantElement.appendChild(rawView);
+
+        // Used for searching
+        removeCombatantElement.dataset.friendlyText = friendlyViewElement.innerText;
+        Object.entries(message).forEach(([key, value]) => {
+          removeCombatantElement.dataset[key] = value;
+        });
+
+        return removeCombatantElement;
+      }
+
+      /**
+       * Given a addCombatantMessage, create an HTML table with it's data
+       *
+       * @param {object} addCombatantMessage The parsed combatant added message.
+       *
+       * @return {HTMLObject} The newly created table element
+       */
+      function createAddCombatantTable(addCombatantMessage){
+        const detailsTable = document.createElement('table');
+        detailsTable.classList.add('itemDetailsTable');
+
+        const firstRow = createTableRowFromArray([
+          'Actor',
+          addCombatantMessage.actorName,
+          'Actor ID',
+          addCombatantMessage.actorId
+        ]);
+        detailsTable.appendChild(firstRow);
+
+        const secondRow = createTableRowFromArray([
+          'Current HP',
+          addCombatantMessage.currentHp,
+          'Total HP',
+          addCombatantMessage.totalHp
+        ]);
+        detailsTable.appendChild(secondRow);
+
+        const thirdRow = createTableRowFromArray([
+          'Current MP',
+          addCombatantMessage.currentMp,
+          'Total MP',
+          addCombatantMessage.totalMp
+        ]);
+        detailsTable.appendChild(thirdRow);
+
+        // Fifth Row ///////////////////////////////////////////////////////////
+        const fifthRow = document.createElement('tr');
+        detailsTable.appendChild(fifthRow);
+
+        // Timestamp
+        const timestampColumnElement = document.createElement('td');
+        timestampColumnElement.colSpan = 4;
+        fifthRow.appendChild(timestampColumnElement);
+        const timestampElement = document.createTextNode(addCombatantMessage.timestamp);
+        timestampColumnElement.appendChild(timestampElement);
+
+        return detailsTable;
+      }
+
+      /**
+       * Create a "Starts Casting" element to display the "Starts Casting" log
+       * lines
+       *
+       * @param {object} rawData The raw, unparsed, gained effect object
+       *
+       * @return {HTMLObject} The newly created element
+       */
+      function createAddCombatantElement(message){
+        // Container for the starts casting messages
+        const addCombatantElement = document.createElement('details');
+        addCombatantElement.classList.add('card');
+        addCombatantElement.classList.add('itemContainer');
+
+        // Container for the friendly view elements
+        const friendlyViewElement = document.createElement('summary');
+        friendlyViewElement.classList.add('itemFriendlyView');
+        addCombatantElement.appendChild(friendlyViewElement);
+
+        // Timestamp
+        const friendlyTimestampElement = document.createElement('span');
+        const timestamp = new Date(message.timestamp);
+        friendlyTimestampElement.innerHTML = convertDateToFriendlyWithMilliseconds(timestamp);
+        friendlyViewElement.appendChild(friendlyTimestampElement);
+
+        // Actor starts casting an action on a Target
+        const friendlyActorElement = document.createElement('span');
+        let friendlyText = `New Combatant: <b>${message.actorName}</b>`;
+        friendlyActorElement.innerHTML = friendlyText;
+        friendlyViewElement.appendChild(friendlyActorElement);
+
+        // Container for the detailed view
+        const detailedView = document.createElement('div');
+        addCombatantElement.appendChild(detailedView);
+
+        // Table to hold the message information
+        const gainedEffectTable = createAddCombatantTable(message)
+        detailedView.appendChild(gainedEffectTable);
+
+        // Parsed message view
+        const parsedView = createCodeBlock(
+          (({raw, ...others }) => others)(message)
+        );
+        addCombatantElement.appendChild(parsedView);
+
+        // Raw message view
+        const rawView = createCodeBlock(message.raw);
+        addCombatantElement.appendChild(rawView);
+
+        // Used for searching
+        addCombatantElement.dataset.friendlyText = friendlyViewElement.innerText;
+        Object.entries(message).forEach(([key, value]) => {
+          addCombatantElement.dataset[key] = value;
+        });
+
+        return addCombatantElement;
+      }
+
+      /**
        * Given a startsCastingMessage, create an HTML table with it's data
        *
-       * @param {object} startsCastingMessage The parsed used ability message.
+       * @param {object} startsCastingMessage The parsed starts casting message.
        *
        * @return {HTMLObject} The newly created table element
        */
