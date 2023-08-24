@@ -171,6 +171,9 @@
         <div class="toolbarItem">
           <button id="pauseButton"  name="pause" onclick="updatePaused(this)" data-pause="true">Pause</button>
           <button id="resumeButton" name="pause" onclick="updatePaused(this)" class="displayNone">Resume</button>
+          <button id="buttonToggleFilters" onclick="clearOnClickHandler()">
+            Clear
+          </button>
         </div>
         <div class="toolbarItem">
           <input type="checkbox" id="logToConsoleCheckbox" name="logToConsole" checked onchange="updateOption('logToConsole', this.checked)"/>
@@ -185,7 +188,7 @@
           <label for="limitToCharacterCheckbox" id="limitToCharacterLabel">Limit to {characterName}</label>
         </div>
         <div class="toolbarItem" style="flex: 1; text-align: right;">
-          <button type="checkbox" id="buttonToggleFilters" onclick="toggleFilters()">
+          <button id="buttonToggleFilters" onclick="toggleFilters()">
             Filters
           </button>
         </div>
@@ -552,7 +555,7 @@
         MESSAGE_TYPE_CHANGED_ZONE
       ];
 
-
+      // Friendly text for each message type
       const messageTypeToFriendlyMap = {
         [MESSAGE_TYPE_LOG_LINE]: 'Log Line',
         [MESSAGE_TYPE_CHANGE_PRIMARY_PLAYER]: 'Primary Player Changed',
@@ -584,6 +587,7 @@
         MESSAGE_TYPE_SERVER_TICK
       ];
 
+      // Populate the Message Type Dropdown filter with messageTypes
       const inputMessageTypeDropdown = document.getElementById('inputMessageTypeDropdown');
       messageTypes.forEach(messageType => {
         if(!messageTypeBlackList.includes(messageType)){
@@ -893,6 +897,23 @@
           element.classList.add('displayNone');
         }
         document.getElementById('main').appendChild(element);
+      }
+
+      /**
+       * Empty the contents of the main element
+       */
+      function clearMain(){
+        document.getElementById('main').replaceChildren();
+      }
+
+      /**
+       * Click handler for the "Clear" button, calls clearMain and console.clear
+       */
+      function clearOnClickHandler(){
+        if(window.confirm("Are you sure you wish to clear all visible logs?")){
+          clearMain();
+          console.clear();
+        }
       }
 
       /**
