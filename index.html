@@ -46,6 +46,9 @@
         padding-right: 8px;
         border-right: 1px solid #f2f2f2;
       }
+      #toolbarHomeRow > .toolbarItem > label:first-child{
+        padding-left: 8px;
+      }
 
       .toolbarItem{
         display: inline-block;
@@ -185,7 +188,19 @@
         </div>
         <div class="toolbarItem">
           <input type="checkbox" id="limitToCharacterCheckbox" name="limitToCharacter" onchange="updateOption('limitToCharacter', this.checked)"/>
-          <label for="limitToCharacterCheckbox" id="limitToCharacterLabel">Limit to {characterName}</label>
+          <label for="limitToCharacterCheckbox" id="limitToCharacterLabel">Limit to {characterName}Order</label>
+        </div>
+        <div class="toolbarItem">
+          <label for="inputSortOrder" id="inputSortOrderLabel">Order</label>
+          <select
+            id="inputSortOrder"
+            name="sortOrder"
+            onchange="updateOption('sortOrder', this.value)"
+            required="true"
+          >
+            <option value="ascending">Ascending</option>
+            <option value="descending" selected>Descending</option>
+          </select>
         </div>
         <div class="toolbarItem" style="flex: 1; text-align: right;">
           <button id="buttonToggleFilters" onclick="toggleFilters()">
@@ -275,10 +290,14 @@
 
       const options = {
         paused: false, // Pause all processing?
-        limitToCharacter: document.getElementById('limitToCharacterCheckbox').checked, // Limit to currenct character?
-        logToConsole: document.getElementById('logToConsoleCheckbox').checked, // Log to console?
-        logRawData: document.getElementById('logRawDataCheckbox').checked // Log raw data?
+        limitToCharacter: document.getElementById('limitToCharacterCheckbox').checked, // Limit everything to currenct character
+        logToConsole: document.getElementById('logToConsoleCheckbox').checked, // Log to console
+        logRawData: document.getElementById('logRawDataCheckbox').checked, // Log raw data to console
+        sortOrder: document.getElementById('inputSortOrder').value // Sort Order by timestamp for all elements
       }
+
+      const SORT_ORDER_ASCENDING = 'ascending';
+      const SORT_ORDER_DESCENDING = 'descending';
 
       /**
        * Update an option
@@ -288,6 +307,30 @@
        */
       function updateOption(optionName, value){
         options[optionName] = value;
+
+        if(optionName === 'sortOrder'){
+          sortMain(value);
+        }
+      }
+
+      function sortMain(order){
+        const mainElement = document.getElementById('main');
+        const elements = [...mainElement.childNodes];
+
+        const ascendingOrder = order === SORT_ORDER_ASCENDING ? true : false;
+
+        elements.sort((a, b) => {
+          const aDate = new Date(a.dataset.timestamp);
+          const bDate = new Date(b.dataset.timestamp);
+          if(aDate > bDate){
+            return ascendingOrder ? 1 : -1;
+          }
+          if(bDate > aDate){
+            return ascendingOrder ? -1 : 1;
+          }
+          return 0;
+        });
+        mainElement.replaceChildren(...elements);
       }
 
       /**
@@ -1054,7 +1097,12 @@
         if(shouldHideElement(element)){
           element.classList.add('displayNone');
         }
-        document.getElementById('main').appendChild(element);
+        if(options.sortOrder === SORT_ORDER_ASCENDING){
+          document.getElementById('main').appendChild(element);
+        }
+        else{
+          document.getElementById('main').prepend(element);
+        }
       }
 
       /**
