@@ -268,8 +268,7 @@
         </div>
       </div>
     </div>
-    <div id="main">
-    </div>
+    <div id="main"></div>
   </body>
   <footer>
     <script>
@@ -326,8 +325,8 @@
       //        [4]  jobId: 13
       //        [5]  level: 5A
       //        [6]  ??: 0000
-      //        [7]  ??: 4A
-      //        [8]  ??: Coeurl
+      //        [7]  worldId: 4A
+      //        [8]  worldName: Coeurl
       //        [9]  ??: 0
       //        [10] ??: 0
       //        [11] currentHp: 116557
@@ -350,11 +349,12 @@
           actorName: message.line[3],
           jobId: parseInt(message.line[4], 16),
           level: parseInt(message.line[5], 16),
+          worldId: parseInt(message.line[7], 16),
+          worldName: message.line[8],
           currentHp: message.line[11],
           totalHp: message.line[12],
           currentMp: message.line[13],
-          totalMp: message.line[14],
-
+          totalMp: message.line[14]
         };
       }
 
@@ -366,8 +366,8 @@
       //        [4]  jobId: 22
       //        [5]  level: 57
       //        [6]  ??: 0000
-      //        [7]  ??: 4A
-      //        [8]  ??: Coeurl
+      //        [7]  worldId: 4A
+      //        [8]  worldName: Coeurl
       //        [9]  ??: 0
       //        [10] ??: 0
       //        [11] currentHp: 38060
@@ -390,6 +390,8 @@
           actorName: message.line[3],
           jobId: parseInt(message.line[4], 16),
           level: parseInt(message.line[5], 16),
+          worldId: parseInt(message.line[7], 16),
+          worldName: message.line[8],
           currentHp: message.line[11],
           totalHp: message.line[12],
           currentMp: message.line[13],
@@ -711,8 +713,6 @@
       const actions = {};
       const effects = {};
 
-      // Will hold all newly created elements that are added to the main area
-      const elements = [];
       const filters = {
         filterFriendlyText: null,
         filterMessageType: null,
@@ -742,7 +742,7 @@
       }
 
       function filterElements(){
-        elements.forEach(element => {
+        document.getElementById('main').childNodes.forEach(element => {
           if(shouldHideElement(element)){
             element.classList.add('displayNone');
           }
@@ -840,7 +840,7 @@
           canLog = canLog && isRelatedToCurrentCharacter(targetId)
         }
 
-        if(canLog){
+        if(canLog && (data.messageType == filters.filterMessageType || !filters.filterMessageType)){
           console.log(data);
         }
       }
@@ -867,7 +867,11 @@
         const messageType = data.line[0];
         if(!options.paused){
           if(messageTypes.includes(messageType)){
-            if(options.logToConsole && options.logRawData){
+            if(
+              options.logToConsole
+              && options.logRawData
+              && (messageType == filters.filterMessageType || !filters.filterMessageType)
+            ){
               console.log(
                 messageTypeToFriendlyMap[messageType] ? messageTypeToFriendlyMap[messageType] : 'Unknown message type',
                 data
@@ -1047,7 +1051,6 @@
        * @param {HTMLElement} element The element to append
        */
       function appendElementToMain(element){
-        elements.push(element);
         if(shouldHideElement(element)){
           element.classList.add('displayNone');
         }
@@ -1059,7 +1062,6 @@
        */
       function clearMain(){
         document.getElementById('main').replaceChildren();
-        elements.splice(0, elements.length);
       }
 
       /**
@@ -1171,14 +1173,22 @@
         ]);
         detailsTable.appendChild(fourthRow);
 
-        // Fifth Row ///////////////////////////////////////////////////////////
-        const fifthRow = document.createElement('tr');
+        const fifthRow = createTableRowFromArray([
+          'World ID',
+          removeCombatantMessage.worldId,
+          'World Name',
+          removeCombatantMessage.worldName
+        ]);
         detailsTable.appendChild(fifthRow);
+
+        // Fifth Row ///////////////////////////////////////////////////////////
+        const sixthRow = document.createElement('tr');
+        detailsTable.appendChild(sixthRow);
 
         // Timestamp
         const timestampColumnElement = document.createElement('td');
         timestampColumnElement.colSpan = 4;
-        fifthRow.appendChild(timestampColumnElement);
+        sixthRow.appendChild(timestampColumnElement);
         const timestampElement = document.createTextNode(removeCombatantMessage.timestamp);
         timestampColumnElement.appendChild(timestampElement);
 
@@ -1286,14 +1296,22 @@
         ]);
         detailsTable.appendChild(fourthRow);
 
-        // Fifth Row ///////////////////////////////////////////////////////////
-        const fifthRow = document.createElement('tr');
+        const fifthRow = createTableRowFromArray([
+          'World ID',
+          addCombatantMessage.worldId,
+          'World Name',
+          addCombatantMessage.worldName
+        ]);
         detailsTable.appendChild(fifthRow);
+
+        // Fifth Row ///////////////////////////////////////////////////////////
+        const sixthRow = document.createElement('tr');
+        detailsTable.appendChild(sixthRow);
 
         // Timestamp
         const timestampColumnElement = document.createElement('td');
         timestampColumnElement.colSpan = 4;
-        fifthRow.appendChild(timestampColumnElement);
+        sixthRow.appendChild(timestampColumnElement);
         const timestampElement = document.createTextNode(addCombatantMessage.timestamp);
         timestampColumnElement.appendChild(timestampElement);
 
