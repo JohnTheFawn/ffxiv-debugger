@@ -630,8 +630,8 @@
 
       const MESSAGE_TYPE_LOG_LINE = '00'; // Log Line, literally anything
       const MESSAGE_TYPE_CHANGE_PRIMARY_PLAYER = '02'; // ??? TODO investigate
-      const MESSAGE_TYPE_ADD_COMBATANT = '03'; // ??? TODO investigate
-      const MESSAGE_TYPE_REMOVE_COMBATANT = '04'; // ??? TODO investigate
+      const MESSAGE_TYPE_ADD_COMBATANT = '03'; // Add Combatant
+      const MESSAGE_TYPE_REMOVE_COMBATANT = '04'; // Remove Combatant
       const MESSAGE_TYPE_ADD_BUFF = '05'; // ??? TODO investigate
       const MESSAGE_TYPE_REMOVE_BUFF = '06'; // ??? TODO investigate
       const MESSAGE_TYPE_FLYING_TEXT = '07'; // ??? TODO investigate
@@ -642,15 +642,15 @@
       const MESSAGE_TYPE_LOSE_EFFECT = '30'; // Character loses effect
       const MESSAGE_TYPE_UNKNOWN_37 = '37'; // ??? TODO investigate
       const MESSAGE_TYPE_UNKNOWN_38 = '38'; // ??? TODO investigate
-      const MESSAGE_TYPE_HEALTH_UPDATE = '39'; // Regen tick
+      const MESSAGE_TYPE_HEALTH_UPDATE = '39'; // Health Update
       const MESSAGE_TYPE_CHANGED_ZONE = '40'; // Changed Zone? TODO investigate
 
       // All Message Types
       const messageTypes = [
         MESSAGE_TYPE_LOG_LINE,
         MESSAGE_TYPE_CHANGE_PRIMARY_PLAYER, // ??? TODO investigate
-        MESSAGE_TYPE_ADD_COMBATANT, // ??? TODO investigate
-        MESSAGE_TYPE_REMOVE_COMBATANT, // ??? TODO investigate
+        MESSAGE_TYPE_ADD_COMBATANT, //
+        MESSAGE_TYPE_REMOVE_COMBATANT, //
         MESSAGE_TYPE_ADD_BUFF, // ??? TODO investigate
         MESSAGE_TYPE_REMOVE_BUFF, // ??? TODO investigate
         MESSAGE_TYPE_FLYING_TEXT, // ??? TODO investigate
@@ -1059,6 +1059,7 @@
        */
       function clearMain(){
         document.getElementById('main').replaceChildren();
+        elements.splice(0, elements.length);
       }
 
       /**
@@ -1833,7 +1834,7 @@
        *
        * @return {HTMLObject} The newly created table element
        */
-      function createRegenTickTable(healthUpdateMessage){
+      function createHealthUpdateTable(healthUpdateMessage){
         const detailsTable = document.createElement('table');
         detailsTable.classList.add('itemDetailsTable');
 
@@ -1912,7 +1913,7 @@
         healthUpdateElement.appendChild(detailedView);
 
         // Table to hold the message information
-        const lostEffectTable = createRegenTickTable(message)
+        const lostEffectTable = createHealthUpdateTable(message)
         detailedView.appendChild(lostEffectTable);
 
         // Parsed message view
