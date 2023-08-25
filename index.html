@@ -57,6 +57,9 @@
       .toolbarItem > label{
         cursor: pointer;
       }
+      .toolbarItem > fieldset{
+        border: 1px solid #f2f2f2;
+      }
 
       .toolbarRow{
         display: flex;
@@ -754,6 +757,7 @@
       //const inputMessageTypeDropdown = document.getElementById('inputMessageTypeDropdown');
       const inputMessageTypeFieldSet = document.getElementById('inputMessageTypeFieldSet');
 
+      // Populate the Message Type filter checkboxes
       messageTypes.forEach(messageType => {
         if(!messageTypeBlackList.includes(messageType)){
           const newInput = document.createElement('input');
