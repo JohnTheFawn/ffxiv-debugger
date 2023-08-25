@@ -201,7 +201,7 @@
           <select
             id="inputSortOrder"
             name="sortOrder"
-            onchange="updateOption('sortOrder', this.value)"
+            onchange="updateSortOrder(this.value)"
             required="true"
           >
             <option value="ascending">Ascending</option>
@@ -310,12 +310,23 @@
        */
       function updateOption(optionName, value){
         options[optionName] = value;
-
-        if(optionName === 'sortOrder'){
-          sortMain(value);
-        }
       }
 
+      /**
+       * handler for when the user changes the sort order dropdown
+       *
+       * @param {string} value The chosen order
+       */
+      function updateSortOrder(value){
+        sortMain(value);
+        updateOption('sortOrder', value);
+      }
+
+      /**
+       * Sorts the main elements ascending or descending based
+       *
+       * @param {string} order The order to sort things, ascending or descending
+       */
       function sortMain(order){
         const mainElement = document.getElementById('main');
         const elements = [...mainElement.childNodes];
