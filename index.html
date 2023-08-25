@@ -66,6 +66,9 @@
         display: flex;
         flex: 1;
       }
+      .toolbarRow > .toolbarItem > fieldset{
+        flex: 1;
+      }
       .toolbarRow > .toolbarItem > select,
       .toolbarRow > .toolbarItem > input{
         flex: 1;
@@ -224,23 +227,23 @@
         </div>
         <div class="toolbarRow">
           <div class="toolbarItem">
-            <label for="inputMessageTypeDropdown" id="inputMessageTypeDropdownLabel">Message Type</label>
-            <select
-              type="search"
-              id="inputMessageTypeDropdown"
-              name="messageTypeDropdown"
-              onchange="updateFilter('filterMessageType', this.value)"
-            >
-              <option value=""/>
-            </select>
-          </div>
-          <div class="toolbarItem">
             <label for="inputActorIdDropdown" id="inputActorIdDropdownLabel">Actor</label>
             <select
               type="search"
               id="inputActorIdDropdown"
               name="actorDropdownId"
               onchange="updateFilter('filterActorId', this.value)"
+            >
+              <option value=""/>
+            </select>
+          </div>
+          <div class="toolbarItem">
+            <label for="inputTargetIdDropdown" id="inputTargetIdDropdownLabel">Target</label>
+            <select
+              type="search"
+              id="inputTargetIdDropdown"
+              name="targetIdDropdown"
+              onchange="updateFilter('filterTargetId', this.value)"
             >
               <option value=""/>
             </select>
@@ -259,17 +262,6 @@
             </select>
           </div>
           <div class="toolbarItem">
-            <label for="inputTargetIdDropdown" id="inputTargetIdDropdownLabel">Target</label>
-            <select
-              type="search"
-              id="inputTargetIdDropdown"
-              name="targetIdDropdown"
-              onchange="updateFilter('filterTargetId', this.value)"
-            >
-              <option value=""/>
-            </select>
-          </div>
-          <div class="toolbarItem">
             <label for="inputEffectIdDropdown" id="inputEffectIdDropdownLabel">Effect</label>
             <select
               type="search"
@@ -279,6 +271,14 @@
             >
               <option value=""/>
             </select>
+          </div>
+        </div>
+
+        <div class="toolbarRow">
+          <div class="toolbarItem">
+            <fieldset id="inputMessageTypeFieldSet">
+              <legend>Message Types</legend>
+            </fieldset>
           </div>
         </div>
       </div>
@@ -739,14 +739,46 @@
         MESSAGE_TYPE_UNKNOWN_38
       ];
 
+      // Used for setting the default selected message types in the filters
+      const messageTypeDefaults = [
+        MESSAGE_TYPE_ADD_COMBATANT,
+        MESSAGE_TYPE_REMOVE_COMBATANT,
+        MESSAGE_TYPE_STARTS_CASTING,
+        MESSAGE_TYPE_USE_ABILITY,
+        MESSAGE_TYPE_GAIN_EFFECT,
+        MESSAGE_TYPE_LOSE_EFFECT,
+        MESSAGE_TYPE_HEALTH_UPDATE
+      ];
+
       // Populate the Message Type Dropdown filter with messageTypes
-      const inputMessageTypeDropdown = document.getElementById('inputMessageTypeDropdown');
+      //const inputMessageTypeDropdown = document.getElementById('inputMessageTypeDropdown');
+      const inputMessageTypeFieldSet = document.getElementById('inputMessageTypeFieldSet');
+
       messageTypes.forEach(messageType => {
         if(!messageTypeBlackList.includes(messageType)){
-          const newOption = document.createElement('option');
-          newOption.value = messageType;
-          newOption.innerHTML = messageType + ' - ' + messageTypeToFriendlyMap[messageType];
-          inputMessageTypeDropdown.appendChild(newOption);
+          const newInput = document.createElement('input');
+          newInput.type = 'checkbox';
+          newInput.id = 'checkbox' + messageType;
+          newInput.name = messageType;
+          newInput.value = messageType;
+          if(messageTypeDefaults.includes(messageType)){
+            newInput.checked = true;
+          }
+          newInput.addEventListener('change', e => {
+            if(e.target.checked){
+              filters.filterMessageType.push(messageType);
+            }
+            else{
+              filters.filterMessageType = filters.filterMessageType.filter(val => val !== messageType);
+            }
+            filterElements();
+          });
+          const newLabel = document.createElement('label');
+          newLabel.htmlFor = 'checkbox' + messageType;
+          newLabel.innerHTML = messageType + ' - ' + messageTypeToFriendlyMap[messageType];
+          inputMessageTypeFieldSet.appendChild(newInput);
+          inputMessageTypeFieldSet.appendChild(newLabel);
+          inputMessageTypeFieldSet.appendChild(document.createElement('br'));
         }
       });
 
@@ -758,11 +790,19 @@
 
       const filters = {
         filterFriendlyText: null,
-        filterMessageType: null,
+        filterMessageType: [
+          MESSAGE_TYPE_ADD_COMBATANT,
+          MESSAGE_TYPE_REMOVE_COMBATANT,
+          MESSAGE_TYPE_STARTS_CASTING,
+          MESSAGE_TYPE_USE_ABILITY,
+          MESSAGE_TYPE_GAIN_EFFECT,
+          MESSAGE_TYPE_LOSE_EFFECT,
+          MESSAGE_TYPE_HEALTH_UPDATE
+        ],
         filterActorId: null,
         filterTargetId: null,
         filterActionId: null,
-        filterEffectId: null
+        filterEffectId: null,
       }
 
       let updateFilterTimeout = null;
@@ -847,7 +887,7 @@
         ){
           hideElement = true;
         }
-        if(filters.filterMessageType && element.dataset.messageType != filters.filterMessageType){
+        if(filters.filterMessageType.length > 0 && !filters.filterMessageType.includes(element.dataset.messageType)){
           hideElement = true;
         }
         if(filters.filterActorId && element.dataset.actorId != filters.filterActorId){
@@ -883,7 +923,7 @@
           canLog = canLog && isRelatedToCurrentCharacter(targetId)
         }
 
-        if(canLog && (data.messageType == filters.filterMessageType || !filters.filterMessageType)){
+        if(canLog && (filters.filterMessageType.length < 1 || filters.filterMessageType.includes(data.messageType))){
           console.log(data);
         }
       }
@@ -913,7 +953,7 @@
             if(
               options.logToConsole
               && options.logRawData
-              && (messageType == filters.filterMessageType || !filters.filterMessageType)
+              && (filters.filterMessageType.length < 1 || filters.filterMessageType.includes(messageType))
             ){
               console.log(
                 messageTypeToFriendlyMap[messageType] ? messageTypeToFriendlyMap[messageType] : 'Unknown message type',
@@ -1745,6 +1785,9 @@
         if(message.actorName){
           friendlyText =`<b>${message.actorName}</b> applied <b>${message.effectName}</b> to <b>${message.targetName}</b>`;
         }
+        else if(message.effectName){
+          friendlyText =`<b>${message.effectName}</b> gained <b>${message.effectName}</b>`;
+        }
         else{
           friendlyText =`<b>${message.targetName}</b> gained <b>${message.actionName}</b>`;
         }
@@ -1862,7 +1905,13 @@
 
         // Actor applying the effect to the target
         const friendlyActorElement = document.createElement('span');
-        let friendlyText = `<b>${message.actorName}</b> removed <b>${message.effectName}</b> from <b>${message.targetName}</b>`;
+        let friendlyText = ``;
+        if(message.actorName){
+          friendlyText += `<b>${message.actorName}</b> removed <b>${message.effectName}</b> from <b>${message.targetName}</b>`;
+        }
+        else{
+          friendlyText += `<b>${message.targetName}</b> lost <b>${message.effectName}</b>`;
+        }
         friendlyActorElement.innerHTML = friendlyText;
         friendlyViewElement.appendChild(friendlyActorElement);
 
