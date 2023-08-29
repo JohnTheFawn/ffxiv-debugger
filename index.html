@@ -194,7 +194,7 @@
         </div>
         <div class="toolbarItem">
           <input type="checkbox" id="limitToCharacterCheckbox" name="limitToCharacter" onchange="updateOption('limitToCharacter', this.checked)"/>
-          <label for="limitToCharacterCheckbox" id="limitToCharacterLabel">Limit to {characterName}Order</label>
+          <label for="limitToCharacterCheckbox" id="limitToCharacterLabel">Limit to {characterName}</label>
         </div>
         <div class="toolbarItem">
           <label for="inputSortOrder" id="inputSortOrderLabel">Order</label>
@@ -489,7 +489,11 @@
       }
 
 
-      //    ex: "21|2023-01-16T13:37:49.1410000-05:00|107CDF82|Tonk Tonkers|16|Bulwark|107CDF82|Tonk Tonkers|640F|4D8000|0|0|0|0|0|0|0|0|0|0|0|0|0|0|98900|98900|10000|10000|||-87.90|51.12|1.50|-1.54|98900|98900|10000|10000|||-87.90|51.12|1.50|-1.54|0000130D|0|1|81681bf499192d9b"
+      //    ex: "21|2023-01-16T13:37:49.1410000-05:00|107CDF82|Tonk Tonkers|16|Bulwark   |107CDF82|Tonk Tonkers  |    640F|  4D8000|      0|      0|  0|      0|  0|      0|0|0|0|0|0|0|0|0|98900|98900|10000|10000|||-87.90|51.12|1.50|-1.54|98900|98900|10000|10000|||-87.90|51.12|1.50|-1.54|0000130D|0|1|81681bf499192d9b"
+      //        "21|2023-08-29T14:52:52.0510000-04:00|107FED42|Tonk Tonkers|14|Fight o...|107FED42|Tonk Tonkers  |    190E|  4C0000|      0|      0|  0|      0|  0|      0|0|0|0|0|0|0|0|0|129209|129209|10000|10000|||106.79|93.95|0.00|-0.01|129209|129209|10000|10000|||106.79|93.95|0.00|-0.01|00010553|0|1|b374658180eed69f"
+      //        "21|2023-08-29T12:34:17.3580000-04:00|107FED42|Tonk Tonkers|07|attack    |400007D8|Striking Dummy|  710003| 67E0000|      0|      0|  0|      0|  0|      0|0|0|0|0|0|0|0|0|44|44|0|10000|||253.56|-214.08|105.98|-2.43|117930|117930|10000|10000|||251.70|-215.35|106.20|0.91|003E0DE0|0|1|bf6ebbe89b860334"
+      //        "21|2023-08-29T14:52:48.7050000-04:00|107FED42|Tonk Tonkers|0F|Riot Blade|4000E462|Pallas Athena |35710003|20BF0000|      B|3E88000|11B|  F8000|  0|      0|0|0|0|0|0|0|0|0|10994435|40192744|10000|10000|||100.00|80.00|0.00|0.00|129209|129209|9600|10000|||101.85|85.84|0.00|1.08|00010538|0|1|9fe89487fae09ad6"
+      //        "21|2023-08-29T14:52:43.6230000-04:00|107FED42|Tonk Tonkers|DD3|Royal ...|4000E462|Pallas Athena |41710003|29130000|300000F|76E8000|  F|A718000|11B|DD38000|0|0|0|0|0|0|0|0|11309232|40192744|10000|10000|||100.00|80.00|0.00|0.00|129209|129209|9200|10000|||100.00|84.91|0.00|-3.14|00010512|0|1|65c928892c41b1c2"
       //        [0]  messageType: 21
       //        [1]  timestamp: 2023-08-08T17:49:10.1180000-04:00
       //        [2]  actorId: 107CDF82
@@ -498,7 +502,7 @@
       //        [5]  actionName/effectName: Bulwark
       //        [6]  targetId: 107CDF82
       //        [7]  targetName: Tonk Tonkers
-      //        [8]  ???: 640F
+      //        [8]  proc: 640F
       //        [9]  amount (hex and shifted): 4D8000
       /**
        * Parse a "Gained an Effect" log line
@@ -510,6 +514,7 @@
       function parseMessageUsedAbility(message){
 
         const mysteryFlag = message.line[10];
+        const proc = message.line[8];
 
         const response = {
           raw: message,
@@ -521,14 +526,27 @@
           actionName: message.line[5],
           targetId: parseInt(message.line[6], 16),
           targetName: message.line[7],
-          // ???: message.line[8]
+          proc: message.line[8],
+          criticalHit: false,
+          directHit: false
         };
 
-        if(mysteryFlag === '0'){
-          response.effectId = parseInt(message.line[4], 16);
-          response.effectName = message.line[5];
+        if(proc === CRITICAL_HIT){
+          response.criticalHit = true;
         }
-        else{
+        else if(proc === DIRECT_HIT){
+          response.directHit = true;
+        }
+        else if(proc === CRITICAL_DIRECT_HIT){
+          response.criticalHit = true;
+          response.directHit = true;
+        }
+
+        //if(mysteryFlag === '0'){
+          //response.effectId = parseInt(message.line[4], 16);
+          //response.effectName = message.line[5];
+        //}
+        //else{
           // The value is stored in hex
           // The value is also stored womewhat big endian
           // {4th digit}{5th digit}{6 digit}{7th digit}{???}{1st digit}{2nd digit}{3rd digit}
@@ -541,7 +559,7 @@
           rawAmount.pop();
           const decimalAmount = parseInt(rawAmount.join(''), 16);
           response.amount = decimalAmount;
-        }
+        //}
 
         return response;
       }
@@ -703,6 +721,11 @@
       const MESSAGE_TYPE_UNKNOWN_38 = '38'; // ??? TODO investigate
       const MESSAGE_TYPE_HEALTH_UPDATE = '39'; // Health Update
       const MESSAGE_TYPE_CHANGED_ZONE = '40'; // Changed Zone? TODO investigate
+
+      const NORMAL_HIT = '710003';
+      const CRITICAL_HIT = '712003';
+      const DIRECT_HIT = '714003';
+      const CRITICAL_DIRECT_HIT = '716003';
 
       // All Message Types
       const messageTypes = [
@@ -1682,6 +1705,10 @@
         let friendlyText = `<b>${message.actorName}</b> used <b>${message.actionName}</b>`;
         friendlyText += message.targetName ? ` on <b>${message.targetName}</b>` : '';
         friendlyText += !isNaN(message.amount) ? ' for <b>' + message.amount + '</b>': '';
+        friendlyText += message.criticalHit || message.directHit ? ' (' : '';
+        friendlyText += message.criticalHit ? 'Critical' : '';
+        friendlyText += message.directHit ? (message.criticalHit ? ' ' : '') + 'Direct hit' : '';
+        friendlyText += message.criticalHit || message.directHit ? ')' : '';
         friendlyActorElement.innerHTML = friendlyText;
         friendlyViewElement.appendChild(friendlyActorElement);
 
